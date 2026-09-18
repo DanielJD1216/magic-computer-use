@@ -78,6 +78,7 @@ The command bar must answer, visibly and in order:
 | Blocked | Policy, permission, terms, stale state, or unsupported action prevents progress | Explain, open settings, stop | Nothing consequential runs |
 | Stopped | User or local guard ended the session | Dismiss, start again | No queued request or side effect resumes automatically |
 | Error | An operation failed or could not be verified | Retry safe observation, dismiss | Report what did not happen and do not silently replay |
+| Unknown effect | Cancellation, timeout, crash, or native boundary leaves the result unknowable | Fresh observation, dismiss | Do not claim reversal or retry automatically |
 | Permission required | A named macOS capability is missing | Explain, open System Settings, cancel | Request only the permission needed by the current capability |
 | Verified | Expected visible result was observed | Dismiss, next command | Show action and verification summary, not raw private content |
 
@@ -86,9 +87,9 @@ The command bar must answer, visibly and in order:
 1. Menu-bar item exposes current state with an accessible label and status color plus text.
 2. Press-and-hold the push-to-talk control. Transition to `Listening` and show elapsed capture time.
 3. Render partial transcript in a bounded region. Do not create a chat history by default.
-4. On a stable final or partial transcript, capture a minimized observation: active bundle/name, window title where safe, focused element summary, bounded candidates, transcript phase, session goal, timestamp, and observation ID.
+4. On a stable final or partial transcript, capture a minimized observation: active bundle/name, a filtered window summary, focused element class, locally generated bounded candidates, transcript phase, session goal, timestamp, and observation ID. The candidate set is strict local data, not provider-generated executable instructions.
 5. Show `Choosing` with the target application and candidate count. Do not show a model probability as permission.
-6. Show the selected action in plain language, risk category, and target. For medium-risk actions, show `Waiting for confirmation`; for safe reversible actions, proceed only after local freshness and policy checks.
+6. Resolve the selected candidate ID against the exact observation and local allowlist. Show the selected action in plain language, risk category, and target. For medium-risk actions, show `Waiting for confirmation`; for safe reversible actions, proceed only after local freshness and policy checks.
 7. Show `Executing` with a persistent stop control. The stop path is local and does not wait on Jev/network.
 8. Verify the action-specific visible result. Show `Verified` only when the expected state is observed.
 9. On ambiguity, stale state, permission failure, network failure, unknown choice, or verification failure, show `Blocked` or `Error`, state that the action did not run or was not verified, and offer the next safe step.
@@ -96,13 +97,14 @@ The command bar must answer, visibly and in order:
 ## Required Recovery Paths
 
 - Stop during speech: end capture and discard unsent partial state for the cancelled session.
-- Stop during Jev selection: cancel the request and prevent later response handling from executing an action.
-- Stop during native execution: invoke the adapter's cooperative cancellation if available; never claim reversal if not guaranteed.
+- Stop during Jev selection: advance the session generation, cancel the request, and prevent later response handling from mutating state or executing an action.
+- Stop during native execution: invoke the adapter's cooperative cancellation if available. If the effect cannot be proven absent or complete, show `Unknown effect`, do not claim reversal, and require a fresh user-visible observation before any new action.
+- Every speech event, Jev response, retry, permission callback, executor completion, and verifier result must match the active `sessionGeneration` and `actionAttemptID`.
 - Active app/window changes: invalidate the candidate and rebuild observation.
 - Accessibility permission withdrawal: block action execution and show the System Settings path.
 - Unknown or malformed choice: stop, preserve only redacted diagnostics, and request a fresh observation.
 - Verification failure: show `Not verified`, never repeat automatically.
-- Jev unavailable: local safe/read-only flows may be offered only if an independent local path is implemented; risky actions stop.
+- Jev unavailable: local safe/read-only flows may be offered only if an independent local path is implemented; risky actions stop. Never replay an action whose outcome is unknown.
 
 ## Native Adapter Decision
 

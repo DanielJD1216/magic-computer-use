@@ -13,13 +13,14 @@
 | Tests | XCTest and SwiftUI UI tests | Domain, application, infrastructure, and real-Mac boundary coverage |
 | Build | Xcode/macOS target, exact scheme and minimum OS pending Mac inspection | Reproducible private prototype build |
 
-The repository currently contains only a README and has no existing package, Xcode project, CI, signing configuration, or context conventions. The current WSL host has no `swift` or `xcodebuild`, so Mac build evidence is unavailable here.
+The repository initially contained only a README and has no existing package, Xcode project, CI, signing configuration, or context conventions. The current WSL host has no `swift` or `xcodebuild`, so Mac build evidence is unavailable here.
 
 ## System Boundaries
 
 - `JevMacApp/App/`: application composition, dependencies, environment, and lifecycle.
 - `JevMacApp/Domain/`: Codable value types and closed action/state contracts with no network or Accessibility side effects.
-- `JevMacApp/Application/`: orchestration, policy, cancellation, freshness, and verification decisions.
+- `JevMacApp/Application/`: orchestration, policy, cancellation, freshness, action resolution, and verification decisions.
+- `JevMacApp/Application/ActionResolver.swift`: strict local candidate-to-operation mapping. It rejects unknown fields, unknown IDs, mismatched observation bindings, malformed payload references, and candidate-kind/payload mismatches before an executor can run.
 - `JevMacApp/Features/`: SwiftUI state presentation and user controls. Views do not hold credentials or execute Mac actions directly.
 - `JevMacApp/Infrastructure/Audio/`: speech capture and transcription adapters.
 - `JevMacApp/Infrastructure/TypeSafe/`: request/response models and Jev transport. This boundary is disabled until the terms and access gate is closed.
@@ -53,8 +54,9 @@ The repository currently contains only a README and has no existing package, Xco
 ## Background Jobs and AI Flows
 
 - **Push-to-talk session**: local state machine owns listening, transcription, selection, policy, execution, verification, and terminal states.
-- **Jev selection request**: one cancellable network request for a stable observation/transcript snapshot. Superseded partial requests are cancelled and never authorize a stale action.
+- **Jev selection request**: one cancellable network request for a stable observation/transcript snapshot. Superseded partial requests are cancelled and never authorize a stale action. Every callback carries and checks a `sessionGeneration`; every selected operation carries an `actionAttemptID`.
 - **Retry policy**: only bounded transport retry for transient `429` or `529` responses, with no side-effect replay. `401`, `422`, timeout, cancellation, malformed response, unknown candidate, and stale observation fail closed.
+- **Unknown-effect handling**: if cancellation, crash, timeout, or a native API boundary leaves it impossible to prove whether an action took effect, the session enters `unknownEffect`, records a redacted event, and requires a fresh user-visible observation. It never retries automatically.
 
 ## Invariants
 
@@ -66,3 +68,7 @@ The repository currently contains only a README and has no existing package, Xco
 6. Local cancellation wins over an in-flight network request and stops future execution.
 7. Credentials and private raw content are never emitted to ordinary logs or committed to the repository.
 8. TypeSafe preview terms and Jev-side authorization govern whether the live adapter may be enabled; fake adapters remain the default development path.
+9. Provider output is never an executable payload. Only a selected candidate ID from the exact request is accepted; strict response validation rejects malformed or extra executable fields.
+10. Every speech event, provider response, retry, permission callback, executor completion, and verifier result must match the active session generation before it can mutate session state.
+11. A native operation without a provable outcome enters `unknownEffect` and cannot be replayed automatically.
+12. The target Mac signing, sandbox, entitlement, and provider retention posture must be recorded before real-Mac readiness or dogfooding claims.

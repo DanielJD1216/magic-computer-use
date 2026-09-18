@@ -18,7 +18,9 @@ This plan turns the handoff into gated vertical slices. The live Jev adapter is 
 ## Slice 1: Pure domain contracts
 
 - Action kind, risk, candidate, result, transcript, accessibility snapshot, observation, session state, and session event.
-- Tests: Codable round trips, unique IDs, mandatory stop/ask-user candidates, stale identity, payload non-executability.
+- Define strict decoding and local construction rules: exact candidate fields, stable candidate ID, source observation ID, risk, reversibility, opaque payload reference, and no executable free-form fields.
+- Define the allowlisted candidate-to-operation mapping and `ValidatedAction` boundary. The native executor accepts only `ValidatedAction`.
+- Tests: Codable round trips, unique IDs, mandatory stop/ask-user candidates, stale identity, unknown-field rejection, candidate-kind/payload mismatch, and payload non-executability.
 - No SwiftUI, network, Keychain, or Mac permissions.
 
 ## Slice 2: Local policy and freshness
@@ -28,8 +30,9 @@ This plan turns the handoff into gated vertical slices. The live Jev adapter is 
 
 ## Slice 3: Fake action loop
 
-- Orchestrator, cancellation controller, fake Jev selector, fake observation, fake executor, fake verifier.
-- Tests: state transitions, cancellation precedence, single-flight execution, verifier failure without replay, ask-user fallback.
+- Orchestrator, cancellation controller, session-generation guard, action-attempt identity, fake Jev selector, fake observation, fake executor, fake verifier.
+- Every callback checks generation and attempt identity before state mutation or execution.
+- Tests: state transitions, cancellation precedence, single-flight execution, stale callback rejection, verifier failure without replay, ask-user fallback, and `unknownEffect` when a native outcome cannot be proven.
 
 ## Slice 4: SwiftUI shell
 
@@ -64,7 +67,8 @@ Close all of the following before enabling live transport:
 - Written or otherwise authoritative decision that the intended private prototype use is permitted under current TypeSafe preview terms.
 - Confirmed Jev-side account/API access and usage scope.
 - Confirmed whether direct client calls are allowed or a relay is required.
-- Confirmed retention/privacy handling for the minimized state sent to the provider.
+- Confirmed retention/privacy handling for the minimized state sent to the provider, including any deletion or retention uncertainty.
+- Confirmed field-level transport allowlist and redaction behavior.
 - Approved credential-storage path in the target Mac Keychain.
 
 Only at this gate should the app request Jev-side credentials. Do not paste a credential into chat or source.
@@ -90,6 +94,7 @@ Only at this gate should the app request Jev-side credentials. Do not paste a cr
 
 ## Gate 3: Controlled real-Mac acceptance
 
-- Build, unit tests, UI tests, permission states, Notes/browser/cross-app synthetic workflows, stop, ambiguity, provider failure, and network failure.
+- Require Gate 0 runtime/signing/sandbox evidence, Gate 2 Jev authorization/direct-call-or-relay decision, field-level privacy/retention review, and target-isolation evidence before controlled dogfooding.
+- Build, unit tests, UI tests, permission states, Notes/browser/cross-app synthetic workflows, stop, ambiguity, provider failure, unknown-effect recovery, and network failure.
 - Record exact evidence and unsupported actions.
 - Do not publish claims or package for third parties.

@@ -20,18 +20,29 @@ This is a private prototype for controlled, synthetic, reversible workflows. It 
 
 ## Data Minimization
 
-- Do not send audio, screenshots, video, full clipboard contents, passwords, tokens, or private document bodies to Jev in version 0.1.
-- Send active application metadata, safe window summary, focused-element summary, bounded candidate descriptions, transcript phase/text as needed, session goal, and prior safe result.
-- Omit sensitive Accessibility values by default.
-- Full transcript logging is opt-in and deletable if implemented.
+The transport allowlist is field-level and deny-by-default. A live request may contain only:
+
+- Session goal, transcript phase, and the minimum stable transcript text needed for the current choice.
+- Active bundle identifier and application name.
+- A window title only after local sensitivity filtering; otherwise send `window_present: true` without the title.
+- Focused-element role and a non-sensitive label class; never the raw value by default.
+- Locally generated candidate IDs, action kinds, risk, reversibility, and plain-language descriptions.
+- Observation ID, capture timestamp, and a redacted prior action result.
+
+Do not send audio, screenshots, video, full clipboard contents, passwords, tokens, private document bodies, raw accessibility values, file paths, URLs containing secrets, or unrestricted element trees to Jev in version 0.1. Full transcript logging is opt-in and deletable if implemented.
+
+Provider retention, deletion, and operational-log handling for this minimized state are currently unknown. Record the authoritative provider answer before enabling live transport; do not infer deletion from the API docs or terms summary.
 
 ## Action Safety
 
 - No shell execution, arbitrary coordinate clicking, automatic sending, deletion, purchasing, publishing, or account changes.
 - Use application and domain allowlists in the prototype.
 - Require fresh observation and explicit local policy approval before every action.
+- Resolve the provider's selected ID through a strict local allowlist and reject unknown fields, mismatched observation IDs, malformed payload references, and candidate-kind/payload mismatches.
+- Check the active `sessionGeneration` and `actionAttemptID` in every asynchronous callback.
 - Treat Accessibility as a high-trust permission and explain its scope plainly.
-- Stop and fail closed on ambiguity, stale state, permission failure, network failure, unknown candidate, or failed verification.
+- Stop and fail closed on ambiguity, stale state, permission failure, permission revocation, network failure, unknown candidate, or failed verification.
+- Enter `unknownEffect` after cancellation, timeout, crash, or native boundary uncertainty when the app cannot prove whether an action took effect. Do not replay automatically.
 
 ## Provider Terms Gate
 
@@ -43,4 +54,4 @@ The current TypeSafe preview terms retrieved for this build state that preview a
 - Delete local activity history.
 - Disable the privacy switch before further debugging.
 - Preserve only redacted event IDs and timestamps needed for diagnosis.
-- Do not replay an uncertain native side effect after a crash, timeout, or verification failure.
+- Do not replay an uncertain native side effect after a crash, timeout, cancellation, permission revocation, or verification failure. Surface `unknownEffect` and require fresh user-visible observation.

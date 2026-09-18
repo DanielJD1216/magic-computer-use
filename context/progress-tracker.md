@@ -24,6 +24,7 @@ Update this file after every meaningful implementation change.
 - MagicPath decision: skip. The product contract already specifies the native utility workflow, and the real implementation stack is SwiftUI/AppKit rather than a concept generator.
 - Produced the low-fidelity UI brief, UX acceptance checklist, gated build plan, permissions/security/action-policy/test/latency documents, README, and `.gitignore`.
 - Committed the WSL-accessible foundation as `82907c7` (`docs: establish Jev Mac prototype foundation`).
+- Independent review completed. Tightened the candidate contract, session-generation/action-attempt guards, unknown-effect handling, field-level transport allowlist, provider-retention gate, and controlled-dogfooding criteria.
 
 ## In Progress
 
@@ -34,7 +35,7 @@ Update this file after every meaningful implementation change.
 1. Inspect a real Mac target for macOS minimum, Apple Silicon/Intel support, Xcode/Swift version, bundle identifier, signing, sandbox, and Accessibility test capability.
 2. Implement and test pure domain contracts and policy using a verified Swift/Xcode environment or a separately authorized cross-platform core target.
 3. Implement fake orchestrator loop and UI shell without requesting permissions at launch.
-4. Resolve the legal/access decision before enabling the TypeSafe transport or asking for Jev-side credentials.
+4. Obtain authoritative Jev/TypeSafe authorization for this private client architecture, direct-call versus relay, provider data handling, and permitted evaluation scope before enabling transport or asking for Jev-side credentials.
 
 ## Open Questions
 
@@ -53,7 +54,7 @@ Update this file after every meaningful implementation change.
 - `stop` and `askUser` are always available; stale, incomplete, ambiguous, or low-confidence state fails closed.
 - Push-to-talk is the default interaction. Always-on listening is not part of version 0.1.
 - The first demo uses Notes and browser workflows with synthetic/reversible data only.
-- The live Jev integration remains disabled until terms and Jev-side authorization are explicitly closed.
+- The live Jev integration, credential request, and live smoke test remain disabled until authoritative Jev/TypeSafe authorization and the provider retention/privacy decision are explicitly closed.
 
 ## Session Notes
 

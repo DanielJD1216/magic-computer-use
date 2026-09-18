@@ -32,13 +32,17 @@ This checklist is the gate for the private prototype. It is not representative-u
 - [ ] Externally visible, destructive, financial, privacy-sensitive, and account-changing actions remain confirmation-gated or blocked.
 - [ ] High confidence never bypasses a hard confirmation rule.
 - [ ] A changed app/window/focus invalidates the candidate before execution.
+- [ ] The candidate schema is strict, rejects unknown/extra executable fields, binds to one observation ID, and resolves through an exact local allowlist.
+- [ ] The native executor accepts only a locally constructed validated action, never provider free text.
 - [ ] A failed verifier does not replay the side effect automatically.
 
 ## Recovery and Failure
 
 - [ ] Stop during speech ends capture cleanly.
 - [ ] Stop during Jev selection cancels or invalidates the response.
+- [ ] Every speech, Jev, retry, permission, executor, and verifier callback rejects a stale session generation.
 - [ ] Stop during execution prevents the next action from starting.
+- [ ] If cancellation or a native boundary leaves the outcome unknowable, the app shows `Unknown effect`, does not replay, and requires a fresh user-visible observation.
 - [ ] Unknown candidate, malformed response, timeout, `401`, `422`, `429`, and `529` have distinct redacted error paths.
 - [ ] Low confidence routes to stop or ask-user according to policy.
 - [ ] Jev unavailable fails closed for consequential actions.
@@ -48,6 +52,8 @@ This checklist is the gate for the private prototype. It is not representative-u
 ## Privacy and Diagnostics
 
 - [ ] Ordinary logs contain no API keys, bearer headers, passwords, full clipboard content, or private document contents.
+- [ ] The transport has a field-level allowlist for transcript, app/window, focus, candidates, observation ID, and redacted prior result.
+- [ ] Provider retention/deletion behavior is documented from an authoritative source, or live transport remains disabled.
 - [ ] Full transcript logging is opt-in, visibly labeled, and deletable if implemented.
 - [ ] Activity history uses session ID, candidate ID, risk, observation ID, policy result, timings, and redacted result summaries.
 - [ ] The app has a local privacy switch that disables execution while allowing transcription tests.
@@ -67,6 +73,7 @@ This checklist is the gate for the private prototype. It is not representative-u
 - [ ] Saying or pressing stop ends the current session without a new action.
 - [ ] Delete/send/publish requests do not mutate anything before explicit approval and are out of default scope.
 - [ ] Network unavailable stops without replaying a side effect.
+- [ ] Unknown-effect recovery requires a fresh observation and does not claim reversal or success.
 
 ## Evidence Labels
 
@@ -74,4 +81,4 @@ This checklist is the gate for the private prototype. It is not representative-u
 - **Fixture verified:** deterministic tests prove behavior without Mac or network permissions.
 - **Mac verified:** a real Mac run records the exact scenario, OS/app versions, permissions, and observed result.
 - **Interaction verified:** requires the approved runtime interaction evidence path; not earned by static code or this document.
-- **Ready for controlled dogfooding:** all required fixture and real-Mac gates pass; this does not mean safe, fast, accurate, or production-ready.
+- **Ready for controlled dogfooding:** only after Gate 0 target runtime/signing/sandbox evidence, Gate 2 Jev authorization and direct-call/relay decision, field-level privacy/retention review, synthetic-target isolation, and all required fixture and real-Mac gates pass. This does not mean safe, fast, accurate, or production-ready.

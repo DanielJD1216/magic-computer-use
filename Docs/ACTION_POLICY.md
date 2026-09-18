@@ -19,6 +19,23 @@ Policy is local application logic. Jev confidence is a routing signal, never per
 - A high-confidence destructive candidate never bypasses confirmation.
 - A failed verification never triggers automatic replay.
 - The privacy switch can disable execution while leaving transcription tests enabled.
+- Every asynchronous callback checks the active `sessionGeneration` and, after selection, the `actionAttemptID` before mutating state or starting execution.
+- A cancelled or superseded generation may finish transport cleanup, but its response, retry, permission callback, verifier result, or executor completion cannot authorize a new action.
+
+## Enforceable Candidate Contract
+
+The candidate is data, not an executable instruction. The only executable candidates are created locally from this exact allowlist:
+
+| Candidate kind | Required local mapping | Free-form fields allowed |
+| --- | --- | --- |
+| `openApplication` | `NSWorkspace` launch of an allowlisted bundle identifier | None beyond the local bundle ID reference |
+| `openURL` | URL opening after local scheme/domain allowlist validation | None beyond the local URL reference |
+| `searchWeb` | Locally encoded query into an allowlisted search endpoint | Query payload held outside the model choice |
+| `createNote` | Narrow Notes adapter using synthetic/test target only | Note content held outside the model choice |
+| `typeText` | Verified focused accessibility element plus separately held text payload | No selector or text command from Jev |
+| `scroll`, `goBack`, `wait`, `stop`, `askUser` | Fixed native operation | None |
+
+The internal candidate record must carry a stable candidate ID, action kind, risk, reversibility, source observation ID, and an optional opaque payload reference. The provider response may select only the candidate ID. Unknown candidate IDs, missing required fields, extra executable fields, mismatched observation IDs, malformed payload references, and candidate-kind/payload mismatches are rejected before policy review. The native executor accepts only a locally resolved `ValidatedAction`, never a decoded provider object or free-form string.
 
 ## Decision Inputs
 
@@ -48,6 +65,10 @@ Policy receives:
 - `stopped_by_user`
 - `stopped_network_or_provider`
 - `verification_failed`
+- `blocked_invalid_candidate_schema`
+- `blocked_permission_revoked`
+- `stopped_superseded_generation`
+- `unknown_effect_after_cancellation`
 
 ## Calibration
 
