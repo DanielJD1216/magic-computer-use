@@ -163,16 +163,105 @@ public struct SessionAuthority: Equatable, Sendable {
     }
 }
 
+public enum CaptureState: Equatable, Sendable {
+    case off
+    case listening
+    case finalizing
+    case final
+    case cancelled
+    case failed
+}
+
 public enum ActionState: Equatable, Sendable {
+    case idle
+    case selecting
+    case confirming
+    case executing
+    case verifying
+    case completed
+    case blocked
+    case stopped
     case outcomeUnknown
     case failed
 
     public var requiresFreshObservation: Bool {
-        switch self {
-        case .outcomeUnknown:
-            return true
-        case .failed:
-            return false
-        }
+        self == .outcomeUnknown
+    }
+}
+
+public struct CallbackIdentity: Equatable, Sendable {
+    public let sessionGeneration: Int
+    public let actionAttemptID: String
+
+    public init(sessionGeneration: Int, actionAttemptID: String) {
+        self.sessionGeneration = sessionGeneration
+        self.actionAttemptID = actionAttemptID
+    }
+}
+
+public struct SessionLedger: Sendable {
+    public let sessionID: String
+    public private(set) var sessionGeneration: Int
+    public private(set) var captureState: CaptureState
+    public private(set) var actionState: ActionState
+    private var authority: SessionAuthority
+    private var activeActionAttemptID: String?
+
+    public init(sessionID: String) {
+        self.sessionID = sessionID
+        self.sessionGeneration = 0
+        self.captureState = .off
+        self.actionState = .idle
+        self.authority = SessionAuthority(sessionID: sessionID)
+        self.activeActionAttemptID = nil
+    }
+
+    public mutating func beginListening() {
+        guard authority.isValid else { return }
+        captureState = .listening
+    }
+
+    public mutating func releaseCapture() -> Bool {
+        guard captureState == .listening else { return false }
+        captureState = .finalizing
+        return true
+    }
+
+    public mutating func acceptFinalTranscript() -> Bool {
+        guard captureState == .finalizing else { return false }
+        captureState = .final
+        return true
+    }
+
+    public mutating func startSelection(actionAttemptID: String) -> CallbackIdentity? {
+        guard authority.isValid, captureState == .final else { return nil }
+        actionState = .selecting
+        activeActionAttemptID = actionAttemptID
+        return CallbackIdentity(
+            sessionGeneration: sessionGeneration,
+            actionAttemptID: actionAttemptID
+        )
+    }
+
+    public func accepts(_ callback: CallbackIdentity) -> Bool {
+        authority.isValid
+            && callback.sessionGeneration == sessionGeneration
+            && callback.actionAttemptID == activeActionAttemptID
+    }
+
+    public mutating func stop() {
+        authority.stop()
+        sessionGeneration = authority.generation
+        captureState = .cancelled
+        actionState = .stopped
+        activeActionAttemptID = nil
+    }
+
+    public mutating func startNewGoal() {
+        sessionGeneration += 1
+        authority = SessionAuthority(sessionID: sessionID, generation: sessionGeneration)
+        captureState = .off
+        actionState = .idle
+        activeActionAttemptID = nil
     }
 }
