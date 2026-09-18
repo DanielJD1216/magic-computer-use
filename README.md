@@ -4,9 +4,9 @@ A private macOS menu-bar prototype for testing bounded computer-use control with
 
 ## Current Status
 
-The repository follows the corrected v0.1 Safari-fixture-first handoff in `context/specs/00-build-plan.md`. It contains the product and safety contract, exact capability registry, egress boundary, experiment protocol, platform probe checklist, UX states, action policy, test matrix, and a SwiftPM core.
+The repository follows the corrected v0.1 Safari-fixture-first handoff in `context/specs/00-build-plan.md`. It contains the product and safety contract, exact capability registry, egress boundary, experiment protocol, platform probe checklist, UX states, action policy, test matrix, and a SwiftPM core plus shell.
 
-The pure Swift safety core is implemented and verified on the target Mac with 10 passing tests. No native menu-bar app target, live Jev adapter, Safari fixture action, or real-Mac acceptance evidence is claimed yet.
+The pure Swift safety core is implemented and verified on the target Mac with 17 passing tests. The minimal SwiftUI menu-bar shell builds and launches in a temporary unsigned app bundle. No live Jev adapter, Safari fixture action, or real-Mac acceptance evidence is claimed yet.
 
 The target Mac is reachable through Tailscale and SSH is verified. Full Xcode 26.6 is installed and usable through `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`. The WSL host remains unable to build Swift natively.
 
@@ -36,7 +36,8 @@ When that gate is closed, credentials must be entered through the approved Mac/K
 
 - `Design/`: UI/UX brief and acceptance checklist.
 - `Docs/`: product contract, capability registry, policy, egress, probes, tests, experiments, and publication clearance.
-- `Sources/JevCore/`: pure capability, policy, state, and authority logic.
+- `Sources/JevCore/`: pure capability, policy, state, transcript, selection, and authority logic.
+- `Sources/JevMacShell/`: permission-free SwiftUI menu-bar shell.
 - `Tests/JevCoreTests/`: deterministic safety and lifecycle tests.
 - `context/`: project, architecture, UI, code, workflow, progress truth, and build handoff.
 - `context/specs/00-build-plan.md`: corrected v2 implementation handoff.
@@ -45,4 +46,4 @@ When that gate is closed, credentials must be entered through the approved Mac/K
 
 ## Next Gate
 
-Build the minimal native menu-bar/panel shell and isolated platform probes using the verified Xcode toolchain. Record signing, sandbox, speech, hotkey, panel, Safari Accessibility, native action, and verifier evidence before enabling live Jev. Do not treat the passing core tests as evidence that the native app builds or that Jev has been called.
+Run native speech, hotkey, panel, Safari Accessibility, native action, and verifier probes using the verified Xcode toolchain. Do not treat passing core tests or a process-launch smoke test as evidence that the native app is fully verified or that Jev has been called.

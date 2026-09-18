@@ -17,34 +17,36 @@
 ## Repository and Build Status
 
 - Repository cloned on the Mac at `~/Dev Life/active/Meet Jev, Fastest Computer Use`.
-- Mac working copy is clean and matches `cbf9a25d8a64d35db55568dd7db940a569eb2cba`.
-- Project format: Swift Package Manager core package, with `Package.swift` targeting macOS 14. A native app target remains a later task.
+- Mac working copy is clean and matches `0e1db42095b2c55d22ed1e35ddc32b8f95c74a1a`.
+- Project format: Swift Package Manager core package, with `Package.swift` targeting macOS 14 and an executable `JevMacShell` target.
 - `xcodebuild -checkFirstLaunchStatus` passed under `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 - `xcodebuild -license status` passed under the same developer directory.
+- `swift build --product JevMacShell --disable-sandbox` passed on the target Mac.
+- `swift test --disable-sandbox` passed on the target Mac: 17 tests, 0 failures.
+- A temporary unsigned app bundle launched in the Mac GUI session and was terminated cleanly. This proves process launch only, not visual, focus, permission, or Accessibility behavior.
 - The system-wide selector still points to `/Library/Developer/CommandLineTools`; per-command `DEVELOPER_DIR` is the verified workaround. Switching it globally requires the Mac administrator password and was not attempted interactively.
-- `swift test --disable-sandbox` passed on the target Mac: 10 tests, 0 failures.
 - Swift command-line type-check probes passed for `Foundation`, `AppKit`, `SwiftUI`, `Speech`, `AVFoundation`, `ApplicationServices`, and `Carbon`.
 
 ## Gate Status
 
-- Repository orientation: **partial**. Runtime, Xcode, SDK, SwiftPM format, and exact test command are recorded. Signing, sandbox, app bundle, permissions, speech mode, hotkey path, and applicable TypeSafe agreement remain open.
-- Native feasibility: **blocked for observation**. Speech finalization/cancellation, hotkey lifecycle, panel focus, Safari Accessibility identity, native fixture action, and exact verification have not been observed in a running app.
-- Fake safety loop: **partial**. The first 10 pure domain/lifecycle tests pass. Fake orchestrator, response validation, redaction, budget, and fixture adapter tests remain.
+- Repository orientation: **partial**. Runtime, Xcode, SDK, SwiftPM format, and exact test/build commands are recorded. Signing, sandbox, app bundle, permissions, hotkey path, and applicable TypeSafe agreement remain open.
+- Native feasibility: **partial**. The shell launches, and `en-CA` Speech reports available with on-device recognition support. Speech lifecycle, hotkey lifecycle, panel focus, Safari Accessibility identity, native fixture action, and exact verification have not been observed.
+- Fake safety loop: **partial**. Seventeen pure domain, transcript, lifecycle, and bounded-selection tests pass. Fake orchestrator, response transport parsing, redaction, budget, and fixture adapter tests remain.
 - Live Jev: **disabled**. No credential or live request is needed.
 
 ## Required Next Mac Action
 
-The full Xcode toolchain is now available. Continue using `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` for remote commands unless the administrator runs:
+Continue using `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` for remote commands unless the administrator runs:
 
 ```bash
 sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 ```
 
-The next implementation gate is the native shell and isolated probes. Do not install or request Jev credentials as a substitute.
+The next implementation gate is native speech/hotkey/panel and local Safari fixture probing. Do not install or request Jev credentials as a substitute.
 
 ## Speech Probe
 
-**Status: not run.** Record selected locale, on-device recognition support, partial revisions, finalization after key release, cancellation, delayed/missing final callbacks, interruption, sleep, and permission withdrawal. Pass only when finalization and cancellation are distinct and stale callbacks cannot mutate a newer session.
+**Capability probe observed:** locale `en-CA`, recognizer available, on-device recognition supported. **Lifecycle probe not run:** partial revisions, finalization after key release, cancellation, delayed/missing final callbacks, interruption, sleep, and permission withdrawal still require the native adapter and user-session observation.
 
 ## Hotkey Probe
 
@@ -52,7 +54,7 @@ The next implementation gate is the native shell and isolated probes. Do not ins
 
 ## Floating Panel Probe
 
-**Status: not run.** Verify transcript display, confirmation, keyboard focus, focus restoration to the Safari fixture, Spaces/full-screen behavior, Stop availability, and dismissal without losing session state.
+**Status: process launch only.** Visual layout, transcript display, confirmation, keyboard focus, focus restoration to the Safari fixture, Spaces/full-screen behavior, Stop availability, and dismissal without losing session state remain unverified.
 
 ## Safari Fixture Probe
 
@@ -60,4 +62,4 @@ The next implementation gate is the native shell and isolated probes. Do not ins
 
 ## Native Readiness Gate
 
-Gate 1 remains closed until speech finalization, hotkey lifecycle, panel focus, Safari Accessibility target identity, one native fixture action, and exact postcondition verification are observed on the target Mac. Passing pure Swift tests and framework type-checks does not close a native feasibility gate.
+Gate 1 remains closed until speech finalization, hotkey lifecycle, panel focus, Safari Accessibility target identity, one native fixture action, and exact postcondition verification are observed on the target Mac. Passing pure Swift tests, framework type-checks, or process launch does not close a native feasibility gate.
