@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "JevCore",
+    name: "JevMacPrototype",
     platforms: [
         .macOS(.v14)
     ],
@@ -10,11 +10,19 @@ let package = Package(
         .library(
             name: "JevCore",
             targets: ["JevCore"]
+        ),
+        .executable(
+            name: "JevMacShell",
+            targets: ["JevMacShell"]
         )
     ],
     targets: [
         .target(
             name: "JevCore"
+        ),
+        .executableTarget(
+            name: "JevMacShell",
+            dependencies: ["JevCore"]
         ),
         .testTarget(
             name: "JevCoreTests",
