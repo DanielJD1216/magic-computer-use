@@ -6,12 +6,13 @@ Update this file after every meaningful change.
 
 - Corrected v0.1 contract and repository orientation are complete.
 - Authenticated Tailscale SSH to the target Mac is complete.
-- Target-Mac platform probing is partially complete and currently blocked by the absence of full Xcode.
-- No Swift source, Xcode target, live Jev transport, native build, or Mac acceptance evidence exists.
+- Full Xcode is installed and usable through `DEVELOPER_DIR`.
+- The pure SwiftPM safety core is implemented and verified with 10 target-Mac tests.
+- Native app and runtime feasibility gates remain open.
 
 ## Current Goal
 
-Install full Xcode on the target Mac, close the remaining orientation facts, then implement the fake Safari-fixture safety loop with executable tests before any live Jev request.
+Build the smallest native menu-bar shell and isolated Mac probes without permissions at launch, then implement the fake Safari-fixture loop before any live Jev request.
 
 ## Completed
 
@@ -22,25 +23,27 @@ Install full Xcode on the target Mac, close the remaining orientation facts, the
 - Reconciled README, architecture, UI context, UX brief/checklist, action policy, permissions, security, code standards, workflow rules, test matrix, latency instrumentation, and diagnostic runbook to Safari-fixture-first scope.
 - Confirmed WSL lacks `swift` and `xcodebuild`.
 - Confirmed Tailscale reachability and authenticated SSH to the Mac.
-- Recorded target Mac evidence: macOS `26.5.1` build `25F80`, `arm64`, Swift `6.2.0.19.9`, Apple Git `2.50.1`.
-- Confirmed the Mac active developer directory is Command Line Tools and `xcodebuild` cannot run without full Xcode.
-- Confirmed Swift framework type-checks for Foundation, AppKit, SwiftUI, Speech, AVFoundation, ApplicationServices, and Carbon.
-- Cloned the repository to the Mac at `~/Dev Life/active/Meet Jev, Fastest Computer Use` and verified clean commit `f71a656`.
+- Recorded target Mac evidence: macOS `26.5.1` build `25F80`, `arm64`, Xcode `26.6`, SwiftPM `6.3.3`.
+- Confirmed Xcode first-launch and license status pass under `DEVELOPER_DIR`.
+- Chose Swift Package Manager for the pure core because the repository had no existing app project or package.
+- Added `Package.swift` and the first capability/policy/lifecycle implementation.
+- Observed the intended red test failures, then made the tests green on the target Mac.
+- Verified `swift test --disable-sandbox`: 10 tests, 0 failures.
+- Cloned and synced the repository to the Mac at `~/Dev Life/active/Meet Jev, Fastest Computer Use`.
 - No Jev credential has been requested or used.
 
 ## In Progress
 
-- Target-Mac setup: install full Xcode, open it once, accept any license prompt, select it with `xcode-select`, and rerun platform orientation.
+- Native shell and platform probes: menu-bar/panel behavior, speech boundary, hotkey lifecycle, and fixture preparation.
 
 ## Next Up
 
-1. Record Xcode, project format, signing identity, entitlements, sandbox, and exact build/test commands.
-2. Run speech finalization/cancellation, on-device mode, hotkey, floating panel, Safari Accessibility, native fixture action, and exact verifier probes.
-3. Build domain, capability, state, policy, stale-callback, cancellation, unknown-effect, budget, and redaction tests with fake adapters.
-4. Build the menu-bar/panel shell without permission requests at launch.
-5. Implement the versioned synthetic Safari fixture and one trusted native operation.
-6. Run the fixture acceptance matrix and egress canaries.
-7. Resolve Jev/TypeSafe private-use authorization, direct client versus relay, provider retention, and credential-entry path before live transport.
+1. Create a minimal native app target or executable shell using the verified Xcode/SwiftPM convention.
+2. Build fake orchestrator, response validation, redaction, budget, and fixture-adapter tests.
+3. Run isolated speech finalization/cancellation, on-device mode, hotkey, floating panel, Safari Accessibility, native fixture action, and exact verifier probes.
+4. Implement the versioned synthetic Safari fixture and one trusted native operation.
+5. Run the fixture acceptance matrix and egress canaries.
+6. Resolve Jev/TypeSafe private-use authorization, direct client versus relay, provider retention, and credential-entry path before live transport.
 
 ## Architecture Decisions
 
@@ -57,8 +60,7 @@ Install full Xcode on the target Mac, close the remaining orientation facts, the
 
 ## Open Questions
 
-- Full Xcode installation and selected developer directory.
-- Project format, bundle ID, signing team, entitlements, and sandbox posture.
+- Native app target format, bundle ID, signing team, entitlements, and sandbox posture.
 - Speech recognition mode and on-device support for the selected locale.
 - Global hotkey and utility panel behavior on the target OS.
 - Safari fixture hosting, accessibility identity, native action path, and verifier.

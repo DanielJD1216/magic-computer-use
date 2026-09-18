@@ -7,38 +7,40 @@
 - User: `danieljindoo`
 - macOS: `26.5.1`, build `25F80`
 - Architecture: `arm64`
-- Swift: Apple Swift `6.2.0.19.9`, target `arm64-apple-macosx26.0`
+- Swift from Command Line Tools: Apple Swift `6.2.0.19.9`
+- Swift from Xcode: Swift Package Manager `6.3.3`
 - Git: Apple Git `2.50.1`
-- Active developer directory: `/Library/Developer/CommandLineTools`
-- SDK: `/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk`
+- Xcode: `26.6`, build `17F113`
+- Xcode app: `/Applications/Xcode.app`
+- Xcode SDK: macOS `26.5`
 
 ## Repository and Build Status
 
 - Repository cloned on the Mac at `~/Dev Life/active/Meet Jev, Fastest Computer Use`.
-- Mac working copy is clean and matches `f71a65687119fb1215fda0ae1c3b7af50e807151`.
-- No `Package.swift`, `.xcodeproj`, or `.xcworkspace` exists yet.
-- `xcodebuild` is present at `/usr/bin/xcodebuild` but fails because the active developer directory is Command Line Tools rather than a full Xcode installation.
-- No Xcode app was found in the checked locations `/Applications/Xcode.app`, `/Applications/Xcode-beta.app`, or `~/Applications/Xcode.app`.
+- Mac working copy is clean and matches `cbf9a25d8a64d35db55568dd7db940a569eb2cba`.
+- Project format: Swift Package Manager core package, with `Package.swift` targeting macOS 14. A native app target remains a later task.
+- `xcodebuild -checkFirstLaunchStatus` passed under `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
+- `xcodebuild -license status` passed under the same developer directory.
+- The system-wide selector still points to `/Library/Developer/CommandLineTools`; per-command `DEVELOPER_DIR` is the verified workaround. Switching it globally requires the Mac administrator password and was not attempted interactively.
+- `swift test --disable-sandbox` passed on the target Mac: 10 tests, 0 failures.
 - Swift command-line type-check probes passed for `Foundation`, `AppKit`, `SwiftUI`, `Speech`, `AVFoundation`, `ApplicationServices`, and `Carbon`.
 
 ## Gate Status
 
-- Repository orientation: **partial**. Repository and target runtime are recorded. Project format, signing, sandbox, exact build/test commands, and entitlements remain unknown because no app target exists.
-- Native feasibility: **blocked**. Speech finalization/cancellation, hotkey lifecycle, panel focus, Safari Accessibility identity, native fixture action, and exact verification have not been observed.
-- Fake safety loop: **not started**. It must not be claimed from documentation alone.
+- Repository orientation: **partial**. Runtime, Xcode, SDK, SwiftPM format, and exact test command are recorded. Signing, sandbox, app bundle, permissions, speech mode, hotkey path, and applicable TypeSafe agreement remain open.
+- Native feasibility: **blocked for observation**. Speech finalization/cancellation, hotkey lifecycle, panel focus, Safari Accessibility identity, native fixture action, and exact verification have not been observed in a running app.
+- Fake safety loop: **partial**. The first 10 pure domain/lifecycle tests pass. Fake orchestrator, response validation, redaction, budget, and fixture adapter tests remain.
 - Live Jev: **disabled**. No credential or live request is needed.
 
 ## Required Next Mac Action
 
-Install the full Xcode application on the target Mac, open it once, accept the license if prompted, and select it with `xcode-select`. Do not install or request Jev credentials as a substitute. After Xcode is available, record:
+The full Xcode toolchain is now available. Continue using `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` for remote commands unless the administrator runs:
 
 ```bash
-xcode-select -p
-xcodebuild -version
-swift --version
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 ```
 
-Then create or choose the project format according to the repository conventions and run isolated speech, hotkey, panel, and Safari fixture probes.
+The next implementation gate is the native shell and isolated probes. Do not install or request Jev credentials as a substitute.
 
 ## Speech Probe
 
@@ -58,4 +60,4 @@ Then create or choose the project format according to the repository conventions
 
 ## Native Readiness Gate
 
-Gate 1 remains closed until speech finalization, hotkey lifecycle, panel focus, Safari Accessibility target identity, one native fixture action, and exact postcondition verification are observed on the target Mac. A Swift framework type-check is useful toolchain evidence but does not close a native feasibility gate.
+Gate 1 remains closed until speech finalization, hotkey lifecycle, panel focus, Safari Accessibility target identity, one native fixture action, and exact postcondition verification are observed on the target Mac. Passing pure Swift tests and framework type-checks does not close a native feasibility gate.

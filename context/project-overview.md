@@ -23,9 +23,9 @@ Notes, arbitrary browser control, generic Mac automation, shell, AppleScript, cl
 
 ## Current Status
 
-The repository contains the v2 implementation handoff and safety artifacts. No Swift source, Xcode target, live Jev adapter, or native acceptance evidence is claimed yet.
+The repository contains the v2 implementation handoff, safety artifacts, SwiftPM core, and 10 passing target-Mac pure tests. No native menu-bar app target, live Jev adapter, or native acceptance evidence is claimed.
 
-The current development host is Ubuntu 24.04 under WSL2 and does not have `swift` or `xcodebuild`. The target Mac is reachable through Tailscale and TCP 22 is open, but public-key authentication is not yet established. The key-install command previously shown was run on WSL, not on the Mac.
+The development host is Ubuntu 24.04 under WSL2 and does not have a Swift toolchain. The target Mac is reachable through Tailscale and SSH is authenticated. Full Xcode 26.6 is available remotely through `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 
 ## Safety Contract
 
@@ -47,6 +47,8 @@ Live Jev transport remains disabled pending authoritative TypeSafe/Jev authoriza
 
 - `Design/`: UI/UX brief and acceptance checklist.
 - `Docs/`: product contract, capability registry, privacy, platform probes, policy, tests, and publication gates.
+- `Sources/JevCore/`: pure capability, policy, state, and authority logic.
+- `Tests/JevCoreTests/`: deterministic safety and lifecycle tests.
 - `context/`: project, architecture, UI, code, workflow, and progress truth.
 - `context/specs/00-build-plan.md`: exact v2 implementation handoff.
 - `context/specs/00-build-plan-v1-summary.md`: prior foundation summary retained for audit context.
@@ -54,4 +56,4 @@ Live Jev transport remains disabled pending authoritative TypeSafe/Jev authoriza
 
 ## Next Gate
 
-Establish authenticated access to the target Mac, run the platform probes, and record the actual Swift/Xcode, signing, sandbox, speech, hotkey, panel, Safari Accessibility, native action, and verification evidence. Do not implement or claim live Jev readiness until the gate conditions in `Docs/PRODUCT_AND_SAFETY_CONTRACT.md` pass.
+Build the minimal native shell and run target-Mac speech, hotkey, panel, Safari Accessibility, native action, and verifier probes. Do not implement or claim live Jev readiness until the gate conditions in `Docs/PRODUCT_AND_SAFETY_CONTRACT.md` pass.

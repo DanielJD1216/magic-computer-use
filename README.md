@@ -4,11 +4,11 @@ A private macOS menu-bar prototype for testing bounded computer-use control with
 
 ## Current Status
 
-The repository now follows the corrected v0.1 Safari-fixture-first handoff in `context/specs/00-build-plan.md`. It contains the product and safety contract, exact capability registry, egress boundary, experiment protocol, platform probe checklist, UX states, action policy, and test matrix.
+The repository follows the corrected v0.1 Safari-fixture-first handoff in `context/specs/00-build-plan.md`. It contains the product and safety contract, exact capability registry, egress boundary, experiment protocol, platform probe checklist, UX states, action policy, test matrix, and a SwiftPM core.
 
-No Swift source, Xcode target, live Jev adapter, native build, or real-Mac acceptance evidence is claimed yet. The current development host is Ubuntu 24.04 under WSL2 and lacks `swift` and `xcodebuild`.
+The pure Swift safety core is implemented and verified on the target Mac with 10 passing tests. No native menu-bar app target, live Jev adapter, Safari fixture action, or real-Mac acceptance evidence is claimed yet.
 
-The target Mac is reachable through Tailscale and Remote Login is enabled. SSH authentication remains pending because the key command was run on WSL rather than on the Mac. See `Docs/PLATFORM_PROBES.md`.
+The target Mac is reachable through Tailscale and SSH is verified. Full Xcode 26.6 is installed and usable through `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`. The WSL host remains unable to build Swift natively.
 
 ## First Workflow
 
@@ -36,6 +36,8 @@ When that gate is closed, credentials must be entered through the approved Mac/K
 
 - `Design/`: UI/UX brief and acceptance checklist.
 - `Docs/`: product contract, capability registry, policy, egress, probes, tests, experiments, and publication clearance.
+- `Sources/JevCore/`: pure capability, policy, state, and authority logic.
+- `Tests/JevCoreTests/`: deterministic safety and lifecycle tests.
 - `context/`: project, architecture, UI, code, workflow, progress truth, and build handoff.
 - `context/specs/00-build-plan.md`: corrected v2 implementation handoff.
 - `context/specs/00-build-plan-v1-summary.md`: prior foundation summary retained for audit context.
@@ -43,4 +45,4 @@ When that gate is closed, credentials must be entered through the approved Mac/K
 
 ## Next Gate
 
-Install the generated SSH public key on the target Mac itself, authenticate over Tailscale, run the platform probes, then record the real toolchain, signing, sandbox, speech, hotkey, panel, Safari Accessibility, native action, and verifier evidence. Do not treat this README as evidence that the app builds or that Jev has been called.
+Build the minimal native menu-bar/panel shell and isolated platform probes using the verified Xcode toolchain. Record signing, sandbox, speech, hotkey, panel, Safari Accessibility, native action, and verifier evidence before enabling live Jev. Do not treat the passing core tests as evidence that the native app builds or that Jev has been called.
