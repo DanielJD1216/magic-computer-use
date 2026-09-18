@@ -4,7 +4,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- Foundation and design gate in progress. Repository is an empty public project; no Mac build evidence yet.
+- Foundation and design gate complete for the WSL-accessible scope. Mac implementation is blocked on target runtime inspection; no Mac build evidence yet.
 
 ## Current Goal
 
@@ -22,10 +22,12 @@ Update this file after every meaningful implementation change.
 - Confirmed current execution host is Ubuntu 24.04 under WSL2 with neither `swift` nor `xcodebuild` available.
 - Mobbin MCP was searched for the required UI research gate and was unavailable in this session. High-fidelity external pattern evidence is therefore unverified.
 - MagicPath decision: skip. The product contract already specifies the native utility workflow, and the real implementation stack is SwiftUI/AppKit rather than a concept generator.
+- Produced the low-fidelity UI brief, UX acceptance checklist, gated build plan, permissions/security/action-policy/test/latency documents, README, and `.gitignore`.
+- Committed the WSL-accessible foundation as `82907c7` (`docs: establish Jev Mac prototype foundation`).
 
 ## In Progress
 
-- Create the design brief, acceptance checklist, build plan, and local fake domain/application slice.
+- Target-runtime handoff: obtain Mac/Xcode/signing/permission evidence before creating the SwiftUI target.
 
 ## Next Up
 
@@ -56,4 +58,7 @@ Update this file after every meaningful implementation change.
 ## Session Notes
 
 - The current WSL environment can create and test repository documentation and platform-neutral logic, but it cannot produce Mac build or real-permission evidence.
+- Tailscale connectivity is confirmed: `hermes-server` reaches `daniels-macbook-pro` at `100.105.165.39` with a 9 ms Tailscale ping.
+- The Mac currently refuses TCP 22 and port 9119, and Tailscale SSH reports connection refused. No remote Mac terminal or Hermes gateway is exposed yet.
+- Next physical action on the Mac: enable Remote Login or expose the authenticated Hermes remote gateway over Tailscale. Do not send passwords or tokens in chat.
 - Do not report the prototype as built, safe, fast, accurate, or ready for dogfooding until the Mac build and acceptance gates pass.
