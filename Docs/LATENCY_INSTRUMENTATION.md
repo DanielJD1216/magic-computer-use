@@ -1,6 +1,6 @@
 # Latency Instrumentation
 
-Measure the action loop before making any performance claim. Timing records are local and redacted.
+Measure the local Safari-fixture loop before making any performance statement. Timing records are local, monotonic, bounded, and redacted.
 
 ## Checkpoints
 
@@ -8,48 +8,52 @@ Measure the action loop before making any performance claim. Timing records are 
 - `push_to_talk_pressed`
 - `speech_first_partial`
 - `speech_stable_partial`
+- `speech_release`
 - `speech_final`
+- `eligibility_decided`
 - `observation_captured`
-- `jev_request_started`
-- `jev_response_received`
+- `candidate_set_created`
+- `selection_request_started`
+- `selection_response_received`
 - `policy_decided`
 - `confirmation_shown`
 - `confirmation_received`
-- `executor_started`
-- `executor_observed_result`
+- `dispatch_started`
+- `fixture_effect_observed`
 - `verification_started`
 - `verification_completed`
-- `session_stopped`
+- `stop_requested`
+- `authority_invalidated`
+- `outcome_unknown`
 - `session_failed`
 
-## Store
+## Stored Fields
 
-Each event may include:
-
-- Session ID.
-- Observation ID.
-- Candidate ID and risk class.
-- Transcript phase, not full transcript by default.
-- Monotonic timestamp/duration.
+- Session, goal, request, observation, candidate-set, and action-attempt IDs.
+- Capability ID and risk class.
+- Transcript phase and revision, not raw transcript by default.
+- Monotonic timestamp and duration.
 - Policy decision and reason code.
-- Redacted result summary.
-- Stop/error category.
+- Fixture version and target binding class.
+- Redacted result, stop, failure, or uncertainty code.
 
-Never store API keys, bearer headers, passwords, full clipboard contents, private document values, raw screenshots, audio, or unrestricted accessibility trees.
+Never store API keys, bearer headers, passwords, raw transcripts, full clipboard values, private document values, screenshots, audio, or unrestricted Accessibility trees.
 
 ## Derived Measures
 
-- Speech start to first visible action.
-- Stable partial to Jev response.
-- Jev response to policy decision.
-- Policy decision to executor start.
-- Executor start to verification completion.
-- End-to-end success and stop latency.
-- Verification success rate, unnecessary action rate, and failed-closed rate.
+Report separately:
+
+- Stable partial to first visible fixture effect.
+- Speech release to first visible fixture effect.
+- Stable partial to verified completion.
+- Speech release to verified completion.
+- Stop request to authority invalidation.
+- Unnecessary early effects.
+- Failed, abandoned, and uncertain attempts.
+- Selection and verification failure rates.
+
+The one-second target is an internal hypothesis, not a promise. Define percentile, warm/cold conditions, sample set, exclusions, baseline, and failure handling in `Docs/EXPERIMENT_PROTOCOL.md` before measuring.
 
 ## Evidence Rules
 
-- Use a fixed synthetic task set and record OS, app, network, model alias, and build identifiers.
-- Keep provider request count and cost internal unless current terms permit publication.
-- Do not compare Jev or this prototype publicly without terms review, a defined baseline, and reproducible runs.
-- If instrumentation changes behavior materially, label the measurement accordingly.
+Use fixed synthetic commands, varied fixture states, held-out paraphrases, and recorded OS/app/build/toolchain/permission conditions. Keep provider request count and cost internal unless agreement and publication clearance permit otherwise. Do not compare Jev or this prototype publicly without agreement review, baseline, and reproducible runs. If instrumentation changes behavior materially, label the measurement.

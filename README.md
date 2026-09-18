@@ -1,51 +1,46 @@
 # Meet Jev, Fastest Computer Use
 
-A private macOS menu-bar prototype for push-to-talk, bounded computer actions, and explicit verification. Swift code owns permissions, policy, execution, cancellation, and logging. Jev, when authorized, selects only from a closed set of action candidates.
+A private macOS menu-bar prototype for testing bounded computer-use control with explicit local authority, cancellation, and verification.
 
-## Current status
+## Current Status
 
-The repository is in foundation and design-gate work. It contains the product contract, UI state specification, privacy/action-policy boundaries, test matrix, latency instrumentation plan, and project context. No macOS app target or live Jev integration is claimed yet.
+The repository now follows the corrected v0.1 Safari-fixture-first handoff in `context/specs/00-build-plan.md`. It contains the product and safety contract, exact capability registry, egress boundary, experiment protocol, platform probe checklist, UX states, action policy, and test matrix.
 
-The current development host is Ubuntu 24.04 under WSL2 and does not have `swift` or `xcodebuild`. Mac build and real-permission verification must run on the supported target Mac.
+No Swift source, Xcode target, live Jev adapter, native build, or real-Mac acceptance evidence is claimed yet. The current development host is Ubuntu 24.04 under WSL2 and lacks `swift` and `xcodebuild`.
 
-## Intended first workflow
+The target Mac is reachable through Tailscale and Remote Login is enabled. SSH authentication remains pending because the key command was run on WSL rather than on the Mac. See `Docs/PLATFORM_PROBES.md`.
 
-> Open Notes, create a synthetic note called `Video ideas`, and type three ideas. Do not send or publish anything.
+## First Workflow
 
-Additional workflows are browser search and copying a synthetic page title into a note. All development and acceptance data must be synthetic and reversible.
+> Push to talk, choose a reviewed state in the local Safari fixture, perform one registered fixture operation, and verify the exact postcondition.
 
-## Safety boundaries
+Only synthetic, local, reversible fixture data is allowed. Notes and generic Mac control are deferred.
+
+## Safety Boundaries
 
 - Push-to-talk only. No always-on listening.
-- No arbitrary shell commands or coordinate-only clicking.
-- No automatic sending, deleting, purchasing, publishing, private-data sharing, or account changes.
-- Every action is a closed candidate selected by local code, checked for risk and freshness, and verified after execution.
-- `stop` and `askUser` are always available.
+- No arbitrary shell, AppleScript, coordinate clicking, generic typing, arbitrary URLs, clipboard transfer, screenshots, vision, external websites, or uncontrolled navigation.
+- Jev may select only an exact locally constructed capability ID.
+- No automatic sending, deleting, purchasing, publishing, sharing, account changes, or privacy-sensitive actions.
+- Stop is local, idempotent, and always available.
+- Unknown native effects become `outcome_unknown` and are never replayed automatically.
 - Credentials belong in macOS Keychain, never in source, fixtures, logs, screenshots, or chat.
 
-## Jev access gate
+## Jev Access Gate
 
-The current TypeSafe preview terms retrieved for this build prohibit using the Interfaces to provide a product or service to a third party, prohibit public benchmarks, and warn that the Interfaces may not be production-suitable. The planned client may fall within a similar-product boundary.
+Live Jev remains disabled until the applicable TypeSafe/Jev agreement, private-use authorization, direct-client versus relay decision, provider retention review, and data-egress review are closed. Jev-side credentials are **not needed yet**.
 
-The live Jev adapter therefore remains disabled until the intended private use is authorized and the direct-client versus relay decision is closed. Jev-side credentials are **not needed yet**. When that gate is closed, credentials must be entered through the approved Mac/Keychain path, not pasted into chat or committed to the repository.
+When that gate is closed, credentials must be entered through the approved Mac/Keychain path. Do not paste passwords, API keys, or tokens into chat or commit them.
 
-## Repository map
+## Repository Map
 
 - `Design/`: UI/UX brief and acceptance checklist.
-- `Docs/`: permissions, security, action policy, test matrix, and latency evidence plan.
-- `context/`: project, architecture, UI, code, workflow, and progress truth.
-- `context/specs/00-build-plan.md`: gated implementation sequence.
+- `Docs/`: product contract, capability registry, policy, egress, probes, tests, experiments, and publication clearance.
+- `context/`: project, architecture, UI, code, workflow, progress truth, and build handoff.
+- `context/specs/00-build-plan.md`: corrected v2 implementation handoff.
+- `context/specs/00-build-plan-v1-summary.md`: prior foundation summary retained for audit context.
 - `docs/guides/diagnostic-runbook.md`: first-failure checks and safe recovery boundaries.
 
-## Next gate
+## Next Gate
 
-Inspect a real Mac target and record:
-
-- macOS minimum and architecture.
-- Swift/Xcode versions.
-- Xcode project versus Swift Package Manager layout.
-- Bundle identifier, signing team, and sandbox posture.
-- Accessibility and real-Mac test strategy.
-- Exact build and test commands.
-
-Do not treat this README as evidence that the application builds or that Jev has been called.
+Install the generated SSH public key on the target Mac itself, authenticate over Tailscale, run the platform probes, then record the real toolchain, signing, sandbox, speech, hotkey, panel, Safari Accessibility, native action, and verifier evidence. Do not treat this README as evidence that the app builds or that Jev has been called.

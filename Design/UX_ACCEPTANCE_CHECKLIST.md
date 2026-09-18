@@ -1,84 +1,66 @@
 # UX Acceptance Checklist
 
-This checklist is the gate for the private prototype. It is not representative-user usability evidence and does not authorize live Jev use, public distribution, or external claims.
+This checklist gates the private Safari-fixture prototype. It is not representative-user usability evidence and does not authorize live Jev, distribution, or external claims.
 
 ## Orientation and Trust
 
-- [ ] The menu-bar item has a text-accessible state label, not color alone.
-- [ ] The command bar identifies the current target application/window when known.
-- [ ] The user can tell whether audio is off, armed, listening, or ended.
-- [ ] The current transcript is visible and distinguishable as partial or final.
-- [ ] The selected action is stated in plain language and maps to a closed candidate ID.
-- [ ] The UI distinguishes automatic, confirmation-required, blocked, stopped, error, and verified outcomes.
-- [ ] A visible stop control remains available during listening, selection, and execution.
-- [ ] Stopping does not wait for the network or Jev.
+- [ ] Menu-bar item has a text-accessible state label and does not rely on color.
+- [ ] Panel identifies the exact Safari fixture target and fixture version.
+- [ ] User can distinguish off, armed, listening, finalizing, and final transcript.
+- [ ] Current transcript revision is visible and marked partial or final.
+- [ ] Selected capability is plain language and maps to a closed registry ID.
+- [ ] Selecting, confirming, executing, verifying, completed, blocked, stopped, failed, and `outcome_unknown` are distinct.
+- [ ] Stop remains available during all active phases and does not wait on Jev/network.
 
 ## Permissions
 
-- [ ] Launching the app does not request microphone or Accessibility permission by itself.
-- [ ] The first-run view explains why each permission exists before requesting it.
-- [ ] Microphone denial has a specific recovery path.
-- [ ] Speech recognition denial/unavailability has a specific recovery path.
-- [ ] Accessibility is requested only when computer actions are enabled.
-- [ ] Automation is requested only for a workflow that needs it.
-- [ ] A missing permission never produces a false action success.
+- [ ] Launch does not request microphone, speech, or Accessibility by itself.
+- [ ] Each permission explains purpose and recovery before request.
+- [ ] Speech denial or unavailability has a safe recovery path.
+- [ ] Accessibility is requested only for the reviewed fixture path.
+- [ ] Missing permission never shows success.
 
-## Action Safety
+## Capability Safety
 
-- [ ] `stop` and `askUser` are always available in the candidate set.
-- [ ] No arbitrary shell command or free-form executable instruction is accepted.
-- [ ] Candidate descriptions explain meaning and consequence, not just enum names.
-- [ ] Medium-risk actions show the intended target and require configured confirmation.
-- [ ] Externally visible, destructive, financial, privacy-sensitive, and account-changing actions remain confirmation-gated or blocked.
-- [ ] High confidence never bypasses a hard confirmation rule.
-- [ ] A changed app/window/focus invalidates the candidate before execution.
-- [ ] The candidate schema is strict, rejects unknown/extra executable fields, binds to one observation ID, and resolves through an exact local allowlist.
-- [ ] The native executor accepts only a locally constructed validated action, never provider free text.
-- [ ] A failed verifier does not replay the side effect automatically.
+- [ ] Registry contains only the exact reviewed v0.1 capabilities.
+- [ ] Observation is internal, not a selectable action.
+- [ ] Unknown IDs, unknown executable fields, stale bindings, malformed responses, and expired confirmations are rejected.
+- [ ] Final speech is required for the first Safari operation.
+- [ ] Key release finalizes capture and does not cancel.
+- [ ] Executor accepts only locally constructed operations.
+- [ ] No shell, arbitrary URL, generic typing, coordinate clicking, clipboard, screenshot, vision, external website, Notes, or publication path exists.
+- [ ] Verification is independent of executor success.
 
-## Recovery and Failure
+## Recovery
 
-- [ ] Stop during speech ends capture cleanly.
-- [ ] Stop during Jev selection cancels or invalidates the response.
-- [ ] Every speech, Jev, retry, permission, executor, and verifier callback rejects a stale session generation.
-- [ ] Stop during execution prevents the next action from starting.
-- [ ] If cancellation or a native boundary leaves the outcome unknowable, the app shows `Unknown effect`, does not replay, and requires a fresh user-visible observation.
-- [ ] Unknown candidate, malformed response, timeout, `401`, `422`, `429`, and `529` have distinct redacted error paths.
-- [ ] Low confidence routes to stop or ask-user according to policy.
-- [ ] Jev unavailable fails closed for consequential actions.
-- [ ] Verification failure says the result was not verified.
-- [ ] The app reports what did not happen and a safe next step.
+- [ ] Stop during speech, selection, execution, and verification invalidates future callbacks.
+- [ ] Every asynchronous callback rejects stale session or action identity.
+- [ ] Timeout, disconnect, crash, or uncertain native boundary shows `outcome_unknown` where appropriate.
+- [ ] Unknown effect requires fresh observation and does not auto-replay.
+- [ ] Contradictory partial speech cannot authorize an unreviewed effect.
+- [ ] Hostile fixture text cannot create a capability or override policy.
 
-## Privacy and Diagnostics
+## Privacy and Experiments
 
-- [ ] Ordinary logs contain no API keys, bearer headers, passwords, full clipboard content, or private document contents.
-- [ ] The transport has a field-level allowlist for transcript, app/window, focus, candidates, observation ID, and redacted prior result.
-- [ ] Provider retention/deletion behavior is documented from an authoritative source, or live transport remains disabled.
-- [ ] Full transcript logging is opt-in, visibly labeled, and deletable if implemented.
-- [ ] Activity history uses session ID, candidate ID, risk, observation ID, policy result, timings, and redacted result summaries.
-- [ ] The app has a local privacy switch that disables execution while allowing transcription tests.
-- [ ] Test fixtures contain synthetic names and content only.
-- [ ] No live Jev credential is present in source, fixtures, screenshots, crash reports, or README.
+- [ ] Speech mode is documented as on-device or explicitly consented remote.
+- [ ] Egress is field-allowlisted and tested with synthetic canaries.
+- [ ] Provider retention and agreement status are recorded before live transport.
+- [ ] Ordinary logs contain no credentials, raw transcripts, clipboard, private values, or raw bodies.
+- [ ] Experiment modes, timing checkpoints, baselines, samples, and failure handling are predeclared.
+- [ ] No public performance, safety, or accuracy claim is made without `Docs/PUBLICATION_CLEARANCE.md`.
 
-## Mac Acceptance Scenarios
+## Mac Gate
 
-- [ ] Menu-bar app launches with no automation side effects.
-- [ ] Push-to-talk shows partial and final transcript on a real Mac.
-- [ ] Open Notes completes and verifies the active app.
-- [ ] Create a synthetic note completes only in the test fixture/account.
-- [ ] Browser search opens the expected synthetic/local query.
-- [ ] Cross-app copy transfers only the approved synthetic title.
-- [ ] Ambiguous command asks the user or stops.
-- [ ] Missing Accessibility permission blocks without acting.
-- [ ] Saying or pressing stop ends the current session without a new action.
-- [ ] Delete/send/publish requests do not mutate anything before explicit approval and are out of default scope.
-- [ ] Network unavailable stops without replaying a side effect.
-- [ ] Unknown-effect recovery requires a fresh observation and does not claim reversal or success.
+- [ ] Menu-bar app launches with no side effects.
+- [ ] Push-to-talk partial and final revisions work on the target Mac.
+- [ ] Safari fixture identity and Accessibility path are verified.
+- [ ] One registered native fixture operation executes and exact postcondition verifies.
+- [ ] Already-satisfied, ambiguous, stale-target, missing-permission, timeout, disconnect, and stop scenarios pass.
 
 ## Evidence Labels
 
-- **Contract defined:** this checklist and the product brief state the intended behavior.
-- **Fixture verified:** deterministic tests prove behavior without Mac or network permissions.
-- **Mac verified:** a real Mac run records the exact scenario, OS/app versions, permissions, and observed result.
-- **Interaction verified:** requires the approved runtime interaction evidence path; not earned by static code or this document.
-- **Ready for controlled dogfooding:** only after Gate 0 target runtime/signing/sandbox evidence, Gate 2 Jev authorization and direct-call/relay decision, field-level privacy/retention review, synthetic-target isolation, and all required fixture and real-Mac gates pass. This does not mean safe, fast, accurate, or production-ready.
+- **Contract defined:** docs specify behavior.
+- **Fixture verified:** deterministic tests pass without Mac or live network.
+- **Mac verified:** exact scenario, OS, app, permissions, and observed result recorded on target Mac.
+- **Live authorized:** agreement, provider handling, egress, and credential gate are closed.
+- **Ready for controlled internal use:** all fixture and Mac gates pass. This does not mean safe, fast, accurate, or production-ready.

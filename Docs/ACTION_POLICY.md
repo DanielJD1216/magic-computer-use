@@ -1,75 +1,84 @@
 # Action Policy
 
-Policy is local application logic. Jev confidence is a routing signal, never permission to act.
+## Policy Position
 
-## Risk Classes
+Native code is the authority for capability, target, risk, confirmation, dispatch, and verification. Jev is a bounded selector, not an executor and not a policy engine.
 
-| Risk | Examples | Default version 0.1 behavior |
-| --- | --- | --- |
-| Read-only | Observe active app, open a local app, open a URL, search, scroll, back, wait | May auto-run only when candidate is current, permissioned, bounded, and confidence passes a locally calibrated threshold |
-| Reversible | Type synthetic text into a verified test target, create a synthetic note | Show intended action; confirmation mode is configurable but conservative by default |
-| Confirmation required | Type into a non-test target, copy data across apps, use an integration with external visibility | Explicit confirmation before execution |
-| Destructive/external | Send, publish, delete, purchase, share private data, change account/system settings | Always require explicit confirmation; default implementation blocks these actions entirely |
+## First-Slice Allowlist
 
-## Hard Rules
+Only these operations may be selected or dispatched:
 
-- `stop` and `askUser` are always available.
-- No candidate, stale observation, incomplete Accessibility state, low confidence, permission failure, or conflicting signal routes to stop or ask-user.
-- The selected candidate must belong to the exact observation sent to Jev.
-- A high-confidence destructive candidate never bypasses confirmation.
-- A failed verification never triggers automatic replay.
-- The privacy switch can disable execution while leaving transcription tests enabled.
-- Every asynchronous callback checks the active `sessionGeneration` and, after selection, the `actionAttemptID` before mutating state or starting execution.
-- A cancelled or superseded generation may finish transport cleanup, but its response, retry, permission callback, verifier result, or executor completion cannot authorize a new action.
+- `activate_preflighted_safari_fixture`
+- `select_reviewed_fixture_view`
+- `wait_for_reviewed_fixture_state`
+- `stop`
+- `ask_user`
 
-## Enforceable Candidate Contract
+The registry is closed. No unknown action is represented as a fallback.
 
-The candidate is data, not an executable instruction. The only executable candidates are created locally from this exact allowlist:
+## Eligibility
 
-| Candidate kind | Required local mapping | Free-form fields allowed |
-| --- | --- | --- |
-| `openApplication` | `NSWorkspace` launch of an allowlisted bundle identifier | None beyond the local bundle ID reference |
-| `openURL` | URL opening after local scheme/domain allowlist validation | None beyond the local URL reference |
-| `searchWeb` | Locally encoded query into an allowlisted search endpoint | Query payload held outside the model choice |
-| `createNote` | Narrow Notes adapter using synthetic/test target only | Note content held outside the model choice |
-| `typeText` | Verified focused accessibility element plus separately held text payload | No selector or text command from Jev |
-| `scroll`, `goBack`, `wait`, `stop`, `askUser` | Fixed native operation | None |
+An eligible candidate requires all of the following:
 
-The internal candidate record must carry a stable candidate ID, action kind, risk, reversibility, source observation ID, and an optional opaque payload reference. The provider response may select only the candidate ID. Unknown candidate IDs, missing required fields, extra executable fields, mismatched observation IDs, malformed payload references, and candidate-kind/payload mismatches are rejected before policy review. The native executor accepts only a locally resolved `ValidatedAction`, never a decoded provider object or free-form string.
+- Correct session and goal identity.
+- Transcript phase satisfies the candidate requirement.
+- Candidate ID exists in the locally generated candidate set.
+- Candidate-set, observation, target, payload, policy, and deadline bindings are current.
+- Target is the exact preflighted Safari fixture.
+- Payload provenance is allowed and immutable.
+- Required permission is granted and still valid.
+- No stop, cancellation, timeout, ambiguity, or unresolved prior effect exists.
 
-## Decision Inputs
+If any check fails, block and request a fresh observation or user decision.
 
-Policy receives:
+## Risk and Confirmation
 
-- Candidate ID and risk.
-- Jev choice, probabilities, and confidence if live selection is authorized.
-- Observation ID and captured timestamp.
-- Current active app/window/focus snapshot.
-- Permission state.
-- Confirmation mode.
-- Privacy switch.
-- Session cancellation state.
+The first Safari fixture is a controlled synthetic target, but local policy still classifies effects:
 
-## Reason Codes
+- **Preparatory:** may run only when explicitly registered, harmless, and independently verifiable.
+- **Visible but reversible:** requires the final transcript and a fresh target check. Add confirmation if the real target boundary makes the effect externally visible.
+- **Destructive, external, financial, privacy-sensitive, account-changing, or publishing:** not in the registry and therefore impossible to dispatch.
 
-- `allowed_read_only`
-- `allowed_reversible`
+Confirmation is an exact local policy decision. Model confidence, probability, or a user-looking string from fixture content is never confirmation.
+
+## Partial and Final Speech
+
+- Partial revisions can update display and eligibility only.
+- A partial revision may authorize a harmless predeclared preparation effect only if the gate is explicit and the effect cannot expand scope.
+- Final speech is required for the first Safari operation.
+- Key release finalizes capture and waits for finalization. It does not cancel.
+- `abortSession` invalidates the session and prevents dispatch.
+- Late revisions cannot authorize a new action after finalization, dispatch, stop, or outcome uncertainty.
+
+## Dispatch
+
+Immediately before dispatch, revalidate session generation, action attempt, target, candidate set, transcript revision, payload version, policy version, permission, confirmation, and deadline. Dispatch the one mapped native operation once. Never pass through free-form model output.
+
+## Verification
+
+The verifier must independently observe the exact expected fixture state. Executor success is not verification. If verification fails, times out, or the target changes, show failed or `outcome_unknown` as appropriate and do not retry automatically.
+
+## Stop and Unknown Effect
+
+Stop is local, idempotent, available in every active state, and cancels future authority before attempting cooperative cancellation. If an adapter may have acted and the result cannot be proved, show `outcome_unknown`, preserve a redacted diagnostic, require fresh observation, and prohibit replay.
+
+## Failure Reasons
+
+Use stable reason codes such as:
+
+- `missing_final_transcript`
+- `unknown_capability`
+- `stale_candidate_set`
+- `target_mismatch`
+- `permission_missing`
 - `confirmation_required`
-- `blocked_destructive`
-- `blocked_stale_observation`
-- `blocked_incomplete_observation`
-- `blocked_permission`
-- `blocked_low_confidence`
-- `blocked_unknown_candidate`
-- `blocked_privacy_switch`
-- `stopped_by_user`
-- `stopped_network_or_provider`
+- `confirmation_expired`
+- `deadline_exceeded`
+- `selection_invalid`
+- `selection_unavailable`
+- `dispatch_rejected`
 - `verification_failed`
-- `blocked_invalid_candidate_schema`
-- `blocked_permission_revoked`
-- `stopped_superseded_generation`
-- `unknown_effect_after_cancellation`
+- `outcome_unknown`
+- `session_stopped`
 
-## Calibration
-
-Thresholds are configuration, not facts copied from TypeSafe examples. Calibrate against representative local synthetic cases after the fake loop is working. Do not publish thresholds, accuracy, latency, or safety claims without terms review and reproducible evidence.
+The UI explains the next safe action in plain language without exposing raw private state.

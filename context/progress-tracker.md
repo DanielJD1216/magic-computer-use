@@ -1,66 +1,67 @@
 # Progress Tracker
 
-Update this file after every meaningful implementation change.
+Update this file after every meaningful change.
 
 ## Current Phase
 
-- Foundation and design gate complete for the WSL-accessible scope. Mac implementation is blocked on target runtime inspection; no Mac build evidence yet.
+- Corrected v0.1 contract and repository orientation are complete.
+- Platform feasibility is blocked at authenticated target-Mac access.
+- No Swift source, Xcode target, live Jev transport, native build, or Mac acceptance evidence exists.
 
 ## Current Goal
 
-- Establish the product contract, native UI states, local fake action loop, and a testable domain boundary before any live Jev request.
+Establish authenticated Mac access, run the v2 platform probes, then implement the smallest fake Safari-fixture safety loop before any live Jev request.
 
 ## Completed
 
-- Confirmed target repository: `/home/jinni_doo/Dev Life/active/Meet Jev, Fastest Computer Use`.
-- Confirmed clean `main` branch at `c9ac67d`, origin `DanielJD1216/magic-computer-use`, with only the initial README before scaffolding.
-- Created project context and diagnostic runbook files.
-- Read current TypeSafe API, state, Choice, confidence, and terms pages.
-- Recorded that Jev accepts text/JSON state only and returns typed Choice probabilities/confidence.
-- Recorded terms constraints: preview access, no third-party product/service use, no public benchmarks, no production suitability assumption, and user responsibility for input rights.
-- Recorded the live access gate as unresolved. No Jev credential has been requested or used.
-- Confirmed current execution host is Ubuntu 24.04 under WSL2 with neither `swift` nor `xcodebuild` available.
-- Mobbin MCP was searched for the required UI research gate and was unavailable in this session. High-fidelity external pattern evidence is therefore unverified.
-- MagicPath decision: skip. The product contract already specifies the native utility workflow, and the real implementation stack is SwiftUI/AppKit rather than a concept generator.
-- Produced the low-fidelity UI brief, UX acceptance checklist, gated build plan, permissions/security/action-policy/test/latency documents, README, and `.gitignore`.
-- Committed the WSL-accessible foundation as `82907c7` (`docs: establish Jev Mac prototype foundation`).
-- Independent review completed. Tightened the candidate contract, session-generation/action-attempt guards, unknown-effect handling, field-level transport allowlist, provider-retention gate, and controlled-dogfooding criteria.
+- Confirmed the authorized repository: `/home/jinni_doo/Dev Life/active/Meet Jev, Fastest Computer Use`.
+- Read the updated v2 handoff and installed it as `context/specs/00-build-plan.md`.
+- Retained the prior foundation summary as `context/specs/00-build-plan-v1-summary.md`.
+- Added the product and safety contract, capability registry, experiment protocol, data-egress boundary, platform-probe checklist, and publication-clearance gate.
+- Reconciled README, architecture, UI context, UX brief/checklist, action policy, permissions, security, code standards, workflow rules, and test matrix to Safari-fixture-first scope.
+- Confirmed the current host is Ubuntu 24.04 under WSL2 without `swift` or `xcodebuild`.
+- Confirmed Tailscale reachability to `daniels-macbook-pro` at `100.105.165.39`.
+- Confirmed macOS Remote Login is enabled and TCP 22 is reachable.
+- Generated a local Ed25519 key at `/home/jinni_doo/.ssh/jev-mac-ed25519`; the private key is outside the repository and has not been shared.
+- Tested SSH with the generated key. Authentication failed because the public key has not been installed on the Mac.
+- No Jev credential has been requested or used.
 
 ## In Progress
 
-- Target-runtime handoff: obtain Mac/Xcode/signing/permission evidence before creating the SwiftUI target.
+- Target-Mac access: install the generated public key on the Mac itself or enable Tailscale SSH, then run the platform probes.
 
 ## Next Up
 
-1. Inspect a real Mac target for macOS minimum, Apple Silicon/Intel support, Xcode/Swift version, bundle identifier, signing, sandbox, and Accessibility test capability.
-2. Implement and test pure domain contracts and policy using a verified Swift/Xcode environment or a separately authorized cross-platform core target.
-3. Implement fake orchestrator loop and UI shell without requesting permissions at launch.
-4. Obtain authoritative Jev/TypeSafe authorization for this private client architecture, direct-call versus relay, provider data handling, and permitted evaluation scope before enabling transport or asking for Jev-side credentials.
-
-## Open Questions
-
-- Is the intended private prototype permitted under the current TypeSafe preview terms, given the planned computer-use client may be considered a similar product or service?
-- Does Jev/TypeSafe provide written authorization for this specific internal development use and direct client architecture?
-- What exact macOS minimum and architecture are required?
-- Xcode project or Swift Package Manager plus an app target?
-- Sandboxed private prototype or non-sandboxed local prototype?
-- Direct Keychain-backed calls or a controlled relay if direct client use is not permitted?
-- Which browser is the controlled acceptance target, and how will synthetic pages be hosted locally?
+1. Authenticate to the Mac over Tailscale.
+2. Record macOS, architecture, Xcode/Swift, project format, signing, sandbox, speech, hotkey, panel, Safari Accessibility, native action, and verifier evidence.
+3. Create the pure domain and policy layer with fixture adapters and tests.
+4. Create the menu-bar/panel shell without permission requests at launch.
+5. Implement the versioned synthetic Safari fixture and one trusted native operation.
+6. Run the fixture acceptance matrix and egress canaries.
+7. Resolve Jev/TypeSafe private-use authorization, direct client versus relay, provider retention, and credential-entry path before live transport.
 
 ## Architecture Decisions
 
-- The model selects only a stable candidate ID; local code resolves and executes the operation.
-- Confidence routes policy but never grants permission by itself.
-- `stop` and `askUser` are always available; stale, incomplete, ambiguous, or low-confidence state fails closed.
-- Push-to-talk is the default interaction. Always-on listening is not part of version 0.1.
-- The first demo uses Notes and browser workflows with synthetic/reversible data only.
-- The live Jev integration, credential request, and live smoke test remain disabled until authoritative Jev/TypeSafe authorization and the provider retention/privacy decision are explicitly closed.
+- First slice is one preflighted local Safari fixture, not Notes or generic Mac control.
+- Jev selects exact locally generated capability IDs only.
+- Observation is internal and is not a selectable action.
+- Capture and action state are separate dimensions.
+- Key release finalizes speech; explicit Stop aborts and invalidates authority.
+- Final speech is required for the first Safari operation unless a reviewed harmless partial exception is separately implemented.
+- Every callback validates session and action-attempt identity.
+- Unknown native effect becomes `outcome_unknown`; no automatic replay.
+- Fixture adapter is the default. Live Jev remains disabled until authority and privacy gates close.
+- Credentials are entered only through the approved Mac/Keychain path and never through chat.
 
-## Session Notes
+## Open Questions
 
-- The current WSL environment can create and test repository documentation and platform-neutral logic, but it cannot produce Mac build or real-permission evidence.
-- Tailscale connectivity is confirmed: `hermes-server` reaches `daniels-macbook-pro` at `100.105.165.39` with a 9 ms Tailscale ping.
-- The Mac now accepts TCP 22 after Remote Login was enabled; TCP 9119 remains refused, and SSH authentication is pending. No authenticated remote Mac terminal or Hermes gateway is connected yet.
-- Next physical action on the Mac: add the generated public key from `/home/jinni_doo/.ssh/jev-mac-ed25519.pub` to the Mac user's `~/.ssh/authorized_keys`, or enable Tailscale SSH instead. Do not send passwords or tokens in chat.
-- Remote Login is now reachable on TCP 22, but authentication is pending because this WSL session had no loaded key. A new local Ed25519 key was generated; its private key is outside the repository and has not been shared.
-- Do not report the prototype as built, safe, fast, accurate, or ready for dogfooding until the Mac build and acceptance gates pass.
+- Target Mac OS, architecture, Xcode/Swift versions, project format, bundle ID, signing team, and sandbox posture.
+- Speech recognition mode and on-device support for the selected locale.
+- Global hotkey and utility panel behavior on the target OS.
+- Safari fixture hosting, accessibility identity, native action path, and verifier.
+- Applicable TypeSafe/Jev agreement and whether this private client architecture is authorized.
+- Direct client versus relay and provider retention/deletion/operational logging.
+
+## Evidence Boundary
+
+Do not report the prototype as built, safe, fast, accurate, reliable, ready for internal use, or production-ready until the relevant fixture, Mac, authority, privacy, and publication gates pass.
