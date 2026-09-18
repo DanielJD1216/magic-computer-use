@@ -60,6 +60,7 @@ Update this file after every meaningful implementation change.
 
 - The current WSL environment can create and test repository documentation and platform-neutral logic, but it cannot produce Mac build or real-permission evidence.
 - Tailscale connectivity is confirmed: `hermes-server` reaches `daniels-macbook-pro` at `100.105.165.39` with a 9 ms Tailscale ping.
-- The Mac currently refuses TCP 22 and port 9119, and Tailscale SSH reports connection refused. No remote Mac terminal or Hermes gateway is exposed yet.
-- Next physical action on the Mac: enable Remote Login or expose the authenticated Hermes remote gateway over Tailscale. Do not send passwords or tokens in chat.
+- The Mac now accepts TCP 22 after Remote Login was enabled; TCP 9119 remains refused, and SSH authentication is pending. No authenticated remote Mac terminal or Hermes gateway is connected yet.
+- Next physical action on the Mac: add the generated public key from `/home/jinni_doo/.ssh/jev-mac-ed25519.pub` to the Mac user's `~/.ssh/authorized_keys`, or enable Tailscale SSH instead. Do not send passwords or tokens in chat.
+- Remote Login is now reachable on TCP 22, but authentication is pending because this WSL session had no loaded key. A new local Ed25519 key was generated; its private key is outside the repository and has not been shared.
 - Do not report the prototype as built, safe, fast, accurate, or ready for dogfooding until the Mac build and acceptance gates pass.
