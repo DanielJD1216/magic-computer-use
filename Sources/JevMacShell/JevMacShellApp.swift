@@ -1,6 +1,7 @@
 import AppKit
 import ApplicationServices
 import Darwin
+import Foundation
 import JevCore
 import SwiftUI
 
@@ -79,8 +80,26 @@ final class ShellModel: ObservableObject {
     @Published private(set) var status: ShellStatus = .armed
     @Published private(set) var transcript = "Hold to speak"
     @Published private(set) var target = "Safari fixture • not connected"
+    @Published private(set) var actionDetail = "No fixture action dispatched."
 
     private let speechCapture = SpeechCapture()
+    private let fixtureAdapter = SafariFixtureAdapter()
+    private var fixtureObservation: SafariFixtureRuntimeObservation?
+    private var sessionLedger = SessionLedger(sessionID: UUID().uuidString)
+    private var activeCallback: CallbackIdentity?
+
+    var isFixtureConnected: Bool {
+        fixtureObservation != nil
+    }
+
+    var isBusy: Bool {
+        switch status {
+        case .connecting, .requestingPermission, .listening, .finalizing, .selecting, .executing, .verifying:
+            return true
+        case .armed, .completed, .stopped, .blocked, .outcomeUnknown, .failed:
+            return false
+        }
+    }
 
     init() {
         speechCapture.onPhaseChange = { [weak self] phase in
@@ -94,27 +113,70 @@ final class ShellModel: ObservableObject {
         }
     }
 
+    func connectFixture() {
+        guard !isBusy else { return }
+        status = .connecting
+        target = "Safari fixture • connecting…"
+        actionDetail = "Opening the declared Safari fixture and observing its exact target."
+
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                let observation = try await fixtureAdapter.connect()
+                apply(observation: observation)
+                status = .armed
+                transcript = "Ready. Say “show me the reviewed fixture”."
+                actionDetail = "Connected. No action dispatched."
+            } catch {
+                fixtureObservation = nil
+                target = "Safari fixture • not connected"
+                status = .blocked
+                actionDetail = "Fixture connection blocked: \(error.localizedDescription)"
+                transcript = "Connect the exact local Safari fixture before speaking."
+            }
+        }
+    }
+
     func beginListening() {
+        guard fixtureObservation != nil else {
+            status = .blocked
+            transcript = "Connect the exact local Safari fixture first."
+            actionDetail = "No target observation exists, so no speech request was started."
+            return
+        }
+        guard !isBusy else { return }
+        sessionLedger.startNewGoal()
+        sessionLedger.beginListening()
+        activeCallback = nil
         transcript = "Requesting microphone and speech access…"
         speechCapture.begin()
     }
 
     func releaseCapture() {
         guard status == .listening else { return }
+        guard sessionLedger.releaseCapture() else { return }
         transcript = "Finalizing transcript…"
         speechCapture.release()
     }
 
     func stop() {
         speechCapture.cancel()
+        sessionLedger.stop()
+        activeCallback = nil
         status = .stopped
-        transcript = "Stopped. No action dispatched."
+        transcript = "Stopped. No action dispatched or retried."
+        actionDetail = "Any late callback is stale and cannot update this session."
     }
 
     func reset() {
         speechCapture.reset()
+        sessionLedger.startNewGoal()
+        activeCallback = nil
         status = .armed
-        transcript = "Hold to speak"
+        transcript = fixtureObservation == nil
+            ? "Connect the exact local Safari fixture first."
+            : "Ready. Hold to speak."
+        actionDetail = "No fixture action dispatched."
     }
 
     private func apply(phase: SpeechCapturePhase) {
@@ -131,36 +193,182 @@ final class ShellModel: ObservableObject {
         case .finalizing:
             status = .finalizing
         case .completed:
-            status = .completed
+            guard sessionLedger.acceptFinalTranscript() else {
+                status = .blocked
+                actionDetail = "Final transcript rejected because the capture session was stale."
+                return
+            }
+            executeFinalTranscript()
         case .cancelled:
+            sessionLedger.stop()
+            activeCallback = nil
             status = .stopped
         case .blocked:
+            sessionLedger.startNewGoal()
+            activeCallback = nil
             status = .blocked
         case .failed:
+            sessionLedger.startNewGoal()
+            activeCallback = nil
             status = .failed
         }
+    }
+
+    private func executeFinalTranscript() {
+        guard let observation = fixtureObservation else {
+            status = .blocked
+            actionDetail = "No target observation exists, so no capability was dispatched."
+            return
+        }
+
+        status = .selecting
+        let actionAttemptID = UUID().uuidString
+        let candidates = CapabilityRegistry.firstSliceCandidates(target: observation.binding)
+        let request = CandidateRequest(
+            requestID: UUID().uuidString,
+            candidateSetID: UUID().uuidString,
+            sessionGeneration: sessionLedger.sessionGeneration,
+            actionAttemptID: actionAttemptID,
+            candidates: candidates
+        )
+        let selectedCapabilityID = FixtureCommandRouter.selectCapability(
+            for: transcript,
+            candidates: candidates
+        )
+        let response = SelectionResponse(
+            requestID: request.requestID,
+            candidateSetID: request.candidateSetID,
+            sessionGeneration: request.sessionGeneration,
+            actionAttemptID: request.actionAttemptID,
+            selectedCapabilityID: selectedCapabilityID
+        )
+
+        guard let selectedCapabilityID else {
+            status = .blocked
+            actionDetail = "No approved fixture capability matched this final transcript."
+            transcript = "No bounded fixture action matched that request."
+            return
+        }
+
+        do {
+            let candidate = try SelectionValidator.validate(response, against: request)
+            guard PolicyGate.canDispatch(
+                candidate: candidate,
+                transcriptPhase: .final,
+                target: observation.binding,
+                now: Date()
+            ) else {
+                status = .blocked
+                actionDetail = "The local policy gate rejected \(selectedCapabilityID.rawValue)."
+                return
+            }
+            guard let callback = sessionLedger.startSelection(actionAttemptID: actionAttemptID) else {
+                status = .blocked
+                actionDetail = "The action attempt was stale before dispatch."
+                return
+            }
+            activeCallback = callback
+            status = .executing
+            actionDetail = "Dispatching the bounded \(candidate.id.rawValue) capability."
+            dispatch(candidate, callback: callback)
+        } catch {
+            status = .blocked
+            actionDetail = "Selection validation rejected the capability: \(error.localizedDescription)"
+        }
+    }
+
+    private func dispatch(_ candidate: CapabilityCandidate, callback: CallbackIdentity) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                let observation: SafariFixtureRuntimeObservation
+                switch candidate.id {
+                case .activatePreflightedSafariFixture:
+                    observation = try await fixtureAdapter.connect()
+                case .selectReviewedFixtureView:
+                    status = .verifying
+                    observation = try await fixtureAdapter.selectReviewed(
+                        expectedTarget: candidate.target
+                    )
+                case .waitForReviewedFixtureState:
+                    status = .verifying
+                    observation = try await fixtureAdapter.waitForReviewed(
+                        expectedTarget: candidate.target
+                    )
+                case .stop, .askUser:
+                    status = .blocked
+                    actionDetail = "This capability is not executable in the fixture slice."
+                    return
+                }
+
+                guard sessionLedger.accepts(callback), activeCallback == callback else {
+                    return
+                }
+                guard observation.binding == candidate.target else {
+                    status = .outcomeUnknown
+                    actionDetail = "The target changed during execution. Outcome is unknown; no retry was made."
+                    return
+                }
+                apply(observation: observation)
+                status = .completed
+                actionDetail = exactPostcondition(for: observation)
+            } catch {
+                guard sessionLedger.accepts(callback), activeCallback == callback else {
+                    return
+                }
+                switch error {
+                case SafariFixtureAdapterError.pressFailed, SafariFixtureAdapterError.verificationTimedOut:
+                    status = .outcomeUnknown
+                    actionDetail = "Outcome unknown: \(error.localizedDescription) No automatic retry was made."
+                default:
+                    status = .blocked
+                    actionDetail = "Fixture action blocked: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    private func apply(observation: SafariFixtureRuntimeObservation) {
+        fixtureObservation = observation
+        let view = observation.view == .reviewed ? "Reviewed" : "Landing"
+        target = "Safari fixture • connected • \(view)"
+    }
+
+    private func exactPostcondition(for observation: SafariFixtureRuntimeObservation) -> String {
+        let state = observation.view == .reviewed ? "reviewed" : "landing"
+        return "Verified: \(observation.title) / State: \(state)"
     }
 }
 
 enum ShellStatus: String {
     case armed
+    case connecting
     case requestingPermission
     case listening
     case finalizing
+    case selecting
+    case executing
+    case verifying
     case completed
     case stopped
     case blocked
+    case outcomeUnknown
     case failed
 
     var title: String {
         switch self {
         case .armed: return "Jev Armed"
+        case .connecting: return "Jev Connecting"
         case .requestingPermission: return "Jev Waiting for Permission"
         case .listening: return "Jev Listening"
         case .finalizing: return "Jev Finalizing"
-        case .completed: return "Jev Transcript Ready"
+        case .selecting: return "Jev Selecting"
+        case .executing: return "Jev Executing"
+        case .verifying: return "Jev Verifying"
+        case .completed: return "Jev Completed"
         case .stopped: return "Jev Stopped"
         case .blocked: return "Jev Permission Needed"
+        case .outcomeUnknown: return "Jev Outcome Unknown"
         case .failed: return "Jev Speech Failed"
         }
     }
@@ -168,12 +376,17 @@ enum ShellStatus: String {
     var symbol: String {
         switch self {
         case .armed: return "waveform"
+        case .connecting: return "safari"
         case .requestingPermission: return "lock.open"
         case .listening: return "mic.fill"
         case .finalizing: return "hourglass"
+        case .selecting: return "list.bullet.rectangle"
+        case .executing: return "play.fill"
+        case .verifying: return "checkmark.shield"
         case .completed: return "checkmark.circle"
         case .stopped: return "stop.circle"
         case .blocked: return "exclamationmark.triangle"
+        case .outcomeUnknown: return "questionmark.diamond"
         case .failed: return "xmark.octagon"
         }
     }
@@ -211,12 +424,26 @@ struct CommandPanel: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Action")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(model.actionDetail)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .font(.caption)
+            }
+
+            Button(model.isFixtureConnected ? "Refresh Safari Fixture" : "Connect Safari Fixture") {
+                model.connectFixture()
+            }
+            .disabled(model.isBusy)
+
             HStack {
                 Button("Hold to Speak") {
                     model.beginListening()
                 }
                 .keyboardShortcut("l", modifiers: [.command, .option])
-                .disabled(model.status == .requestingPermission || model.status == .listening || model.status == .finalizing)
+                .disabled(model.isBusy || !model.isFixtureConnected)
 
                 Button("Release") {
                     model.releaseCapture()
@@ -233,7 +460,7 @@ struct CommandPanel: View {
                 Button("Reset") {
                     model.reset()
                 }
-                .disabled(model.status == .requestingPermission || model.status == .listening || model.status == .finalizing)
+                .disabled(model.isBusy)
             }
         }
         .padding(16)

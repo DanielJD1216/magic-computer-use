@@ -112,6 +112,24 @@ final class SafariFixtureAdapter {
         )
     }
 
+    func waitForReviewed(
+        expectedTarget: TargetBinding
+    ) async throws -> SafariFixtureRuntimeObservation {
+        guard AXIsProcessTrusted() else {
+            throw SafariFixtureAdapterError.accessibilityDenied
+        }
+
+        for _ in 0..<15 {
+            if let observation = observe(),
+               observation.binding == expectedTarget,
+               observation.view == .reviewed {
+                return observation
+            }
+            try await Task.sleep(nanoseconds: 100_000_000)
+        }
+        throw SafariFixtureAdapterError.verificationTimedOut
+    }
+
     func selectReviewed(
         expectedTarget: TargetBinding
     ) async throws -> SafariFixtureRuntimeObservation {
