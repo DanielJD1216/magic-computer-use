@@ -266,7 +266,7 @@ final class SafariFixtureAdapter {
                 stringAttribute(element, kAXTitleAttribute),
                 stringAttribute(element, kAXValueAttribute),
                 stringAttribute(element, kAXDescriptionAttribute)
-            ].first {
+            ].compactMap { $0 }.first {
                 let normalized = normalize($0)
                 return normalized == normalize(reviewedState)
                     || normalized == normalize("State: landing")
