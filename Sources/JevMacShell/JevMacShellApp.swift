@@ -9,6 +9,7 @@ struct JevMacShellApp: App {
     @StateObject private var model: ShellModel
 
     init() {
+        FileHandle.standardError.write(Data("JEV_APP_INIT\\n".utf8))
         let model = ShellModel()
         _model = StateObject(wrappedValue: model)
 
@@ -45,7 +46,7 @@ final class CommandPanelController {
     private var panel: NSPanel?
 
     func show(model: ShellModel) {
-        NSLog("JEV_PANEL_SHOW_ENTER")
+        FileHandle.standardError.write(Data("JEV_PANEL_SHOW_ENTER\\n".utf8))
         if let panel, panel.isVisible {
             panel.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
@@ -73,7 +74,7 @@ final class CommandPanelController {
         panel.makeKeyAndOrderFront(nil)
         panel.orderFrontRegardless()
         NSApp.activate(ignoringOtherApps: true)
-        NSLog("JEV_PANEL_CREATED visible=\(panel.isVisible) frame=\(NSStringFromRect(panel.frame))")
+        FileHandle.standardError.write(Data("JEV_PANEL_CREATED visible=\(panel.isVisible) frame=\(NSStringFromRect(panel.frame))\\n".utf8))
     }
 }
 
