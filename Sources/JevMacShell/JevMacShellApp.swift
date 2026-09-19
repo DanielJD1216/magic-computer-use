@@ -20,7 +20,7 @@ struct JevMacShellApp: App {
             Darwin.exit(0)
         }
 
-        DispatchQueue.main.async {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             CommandPanelController.shared.show(model: model)
         }
     }
@@ -45,9 +45,11 @@ final class CommandPanelController {
     private var panel: NSPanel?
 
     func show(model: ShellModel) {
+        NSLog("JEV_PANEL_SHOW_ENTER")
         if let panel, panel.isVisible {
             panel.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
+            NSLog("JEV_PANEL_REUSED visible=\(panel.isVisible) frame=\(NSStringFromRect(panel.frame))")
             return
         }
 
@@ -71,6 +73,7 @@ final class CommandPanelController {
         panel.makeKeyAndOrderFront(nil)
         panel.orderFrontRegardless()
         NSApp.activate(ignoringOtherApps: true)
+        NSLog("JEV_PANEL_CREATED visible=\(panel.isVisible) frame=\(NSStringFromRect(panel.frame))")
     }
 }
 
