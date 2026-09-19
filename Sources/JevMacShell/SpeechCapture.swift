@@ -150,8 +150,8 @@ final class SpeechCapture {
 
         let inputNode = audioEngine.inputNode
         let recordingFormat = inputNode.outputFormat(forBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1_024, format: recordingFormat) { [weak request] buffer, _ in
-            request?.append(buffer)
+        inputNode.installTap(onBus: 0, bufferSize: 1_024, format: recordingFormat) { @Sendable buffer, _ in
+            request.append(buffer)
         }
 
         audioEngine.prepare()
