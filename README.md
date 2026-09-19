@@ -6,7 +6,7 @@ A private macOS menu-bar prototype for testing bounded computer-use control with
 
 The repository follows the corrected v0.1 Safari-fixture-first handoff in `context/specs/00-build-plan.md`. It contains the product and safety contract, exact capability registry, egress boundary, experiment protocol, platform probe checklist, UX states, action policy, test matrix, and a SwiftPM core plus shell.
 
-The pure Swift safety core is implemented and verified on the target Mac with 20 passing tests. The minimal SwiftUI menu-bar shell now launches a visible AppKit command panel and retains the menu-bar item in a stable ad-hoc signed app bundle. The prior bundle passed the first trusted Safari action and exact postcondition probe; that probe must be rerun after the final UI rebuild and Accessibility re-grant. Speech permissions/lifecycle, physical hotkey behavior, panel focus, and live Jev remain unverified or disabled.
+The pure Swift safety core is implemented and verified on the target Mac with 20 passing tests. The minimal SwiftUI menu-bar shell launches a visible AppKit command panel and retains the menu-bar item in a stable ad-hoc signed app bundle. The final bundle has passed the trusted Safari action and exact postcondition probe. Speech permissions/lifecycle, physical hotkey behavior, panel focus, and live Jev remain unverified or disabled.
 
 The target Mac is reachable through Tailscale and SSH is verified. Full Xcode 26.6 is installed and usable through `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`. The WSL host remains unable to build Swift natively.
 

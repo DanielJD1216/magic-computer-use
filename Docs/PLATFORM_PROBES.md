@@ -19,7 +19,7 @@
 ## Repository and Build Status
 
 - Repository cloned on the Mac at `~/Dev Life/active/Meet Jev, Fastest Computer Use`.
-- Mac working copy is clean and matches `fbbf42f7a74728860db9c958f3e11f0973bdd4ac`.
+- Mac working copy is clean and matches `fbbf42f7a74728860db9c958f3e11f0973bdd4ac` for the final app build; repository documentation is current through the follow-up evidence commit.
 - Project format: Swift Package Manager core package, with `Package.swift` targeting macOS 14 and an executable `JevMacShell` target.
 - `xcodebuild -checkFirstLaunchStatus` passed under `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 - `xcodebuild -license status` passed under the same developer directory.
@@ -32,7 +32,7 @@
 ## Gate Status
 
 - Repository orientation: **partial**. Runtime, Xcode, SDK, SwiftPM format, and exact test/build commands are recorded. Signing, sandbox, app bundle, permissions, hotkey path, and applicable TypeSafe agreement remain open.
-- Native feasibility: **partial and probeable**. The final clean bundle creates an on-screen command panel and retains the menu-bar item. Its ad-hoc rebuild changed the code hash, so the current GUI-session Accessibility probe is `false` until the final bundle is re-added. Carbon hotkey registration succeeds; Safari action remains gated by that permission.
+- Native feasibility: **partial and probeable**. The final clean bundle creates an on-screen command panel, retains the menu-bar item, and is Accessibility-trusted in the GUI session. Carbon hotkey registration succeeds. The final bundle's synthetic Safari identity, native button action, and exact postcondition verifier pass. Real speech permissions/lifecycle, physical hotkey lifecycle, and panel focus remain unverified.
 - Fake safety loop: **partial**. Twenty pure domain, transcript, lifecycle, bounded-selection, and fake-fixture tests pass. Fake orchestrator, response transport parsing, redaction, and budget tests remain.
 - Live Jev: **disabled**. No credential or live request is needed.
 
@@ -44,9 +44,9 @@ Continue using `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` for re
 sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 ```
 
-The final clean UI bundle was rebuilt and ad-hoc signed. Because the code hash changed, remove any old Jev shell entry from System Settings → Privacy & Security → Accessibility, add `~/Applications/JevMacShell-Prototype.app` again, enable its toggle, and then tell me `Accessibility re-added`. No further app rebuild is planned after this. Do not install or request Jev credentials as a substitute.
+The final clean UI bundle is trusted in the GUI session. No further app rebuild is planned before the next native probes. Do not install or request Jev credentials as a substitute.
 
-- **Accessibility trust probe:** the final clean bundle currently returns `AX_TRUSTED=false` when launched through the GUI session. The previous bundle was trusted before this UI fix rebuild. Strict ad-hoc codesign verification passes.
+- **Accessibility trust probe:** the final clean bundle returns `AX_TRUSTED=true` when launched through the GUI session. Strict ad-hoc codesign verification passes.
 - **Speech capability probe:** locale `en-CA` is available and on-device recognition is supported. The non-prompting status probe reports speech and microphone authorization as `notDetermined`; it did not request either permission. The request object supports on-device mode, explicit finalization, and cancellation paths, but real microphone recognition remains untested.
 
 ## Hotkey Probe
@@ -59,8 +59,8 @@ The final clean UI bundle was rebuilt and ad-hoc signed. Because the code hash c
 
 ## Safari Fixture Probe
 
-**Status: observed for the first native slice.** The versioned local fixture opened in Safari with title `Jev Fixture v1 | Landing`; the trusted probe found the known Safari process and fixture window, found the fixed reviewed-view button, received AX press status `0`, and verified title `Jev Fixture v1 | Reviewed` plus `State: reviewed`. The probe recorded Safari PID `52138` and window ID `178338` for this run. No external URL, login state, or uncontrolled action was used.
+**Status: observed for the final bundle.** The final trusted probe found the known Safari process and fixture window, found the fixed reviewed-view button, received AX press status `0`, and verified title `Jev Fixture v1 | Reviewed` plus `State: reviewed`. The same final bundle also creates the on-screen command panel and retains the menu-bar item. No external URL, login state, or uncontrolled action was used.
 
 ## Native Readiness Gate
 
-Gate 1 remains open for the final bundle's Accessibility grant, real speech finalization/cancellation, physical hotkey lifecycle, and panel focus. The panel launch path is observed. Safari Accessibility target identity, native fixture action, and exact postcondition verification were observed on the prior trusted bundle and must be rerun after the final grant.
+Gate 1 remains open for real speech finalization/cancellation, physical hotkey lifecycle, and panel focus. The final bundle's Accessibility target identity, native fixture action, exact postcondition verification, and launch surface are now observed on the target Mac. Passing pure Swift tests or process launch alone still does not close native feasibility.
