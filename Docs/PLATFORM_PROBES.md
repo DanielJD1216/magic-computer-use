@@ -19,20 +19,20 @@
 ## Repository and Build Status
 
 - Repository cloned on the Mac at `~/Dev Life/active/Meet Jev, Fastest Computer Use`.
-- Mac working copy is clean and matches `af9aeb0bac0b0055e50cf60c22acda9e0b70ab2c`.
+- Mac working copy is clean and matches `935a3081c52dae80d1a843d7a80c59c300cdf524`.
 - Project format: Swift Package Manager core package, with `Package.swift` targeting macOS 14 and an executable `JevMacShell` target.
 - `xcodebuild -checkFirstLaunchStatus` passed under `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 - `xcodebuild -license status` passed under the same developer directory.
 - `swift build --product JevMacShell --disable-sandbox` passed on the target Mac.
 - `swift test --disable-sandbox` passed on the target Mac: 20 tests, 0 failures.
-- A stable temporary unsigned app bundle exists at `~/Applications/JevMacShell-Prototype.app`; it launches without requesting permissions. This proves process launch only, not visual, focus, permission, or Accessibility behavior.
+- A stable ad-hoc signed shell bundle exists at `~/Applications/JevMacShell-Prototype.app`; it launches without requesting permissions. This proves process launch and codesign verification, not visual, focus, or Safari acceptance behavior.
 - The system-wide selector still points to `/Library/Developer/CommandLineTools`; per-command `DEVELOPER_DIR` is the verified workaround. Switching it globally requires the Mac administrator password and was not attempted interactively.
 - Swift command-line type-check probes passed for `Foundation`, `AppKit`, `SwiftUI`, `Speech`, `AVFoundation`, `ApplicationServices`, and `Carbon`.
 
 ## Gate Status
 
 - Repository orientation: **partial**. Runtime, Xcode, SDK, SwiftPM format, and exact test/build commands are recorded. Signing, sandbox, app bundle, permissions, hotkey path, and applicable TypeSafe agreement remain open.
-- Native feasibility: **permission-blocked**. The shell launches and `en-CA` Speech reports available with on-device recognition support, but `AXIsProcessTrusted()` returns `false`; signing identities are absent. Speech lifecycle, hotkey lifecycle, panel focus, Safari Accessibility identity, native fixture action, and exact verification have not been observed.
+- Native feasibility: **probeable but not closed**. The final ad-hoc bundle was rebuilt after the last Accessibility grant, changing its code hash; its GUI-session trust probe now returns `false`. Speech capability is available on-device, Carbon hotkey registration succeeds, and Safari interaction is blocked until the final bundle is re-added.
 - Fake safety loop: **partial**. Twenty pure domain, transcript, lifecycle, bounded-selection, and fake-fixture tests pass. Fake orchestrator, response transport parsing, redaction, and budget tests remain.
 - Live Jev: **disabled**. No credential or live request is needed.
 
@@ -44,14 +44,14 @@ Continue using `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` for re
 sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 ```
 
-The next user-session action is to remove any old Jev shell entry from System Settings → Privacy & Security → Accessibility, add the signed bundle at `~/Applications/JevMacShell-Prototype.app` again, enable its toggle, and then tell me `Accessibility re-added`. Do not install or request Jev credentials as a substitute.
+The final native-probe bundle was rebuilt and ad-hoc signed after the previous Accessibility grant. Because the ad-hoc code hash changed, remove any old Jev shell entry from System Settings → Privacy & Security → Accessibility, add `~/Applications/JevMacShell-Prototype.app` again, enable its toggle, and then tell me `Accessibility re-added`. No further app rebuild is planned before the next probe. Do not install or request Jev credentials as a substitute.
 
-- **Accessibility trust probe:** the remote probe and the actual stable app bundle both return `AXIsProcessTrusted() == false`. No permission prompt was triggered. The stable bundle is now ad-hoc signed and passes strict codesign verification.
-- **Speech capability probe:** locale `en-CA` returned available and on-device recognition supported. The actual recognition lifecycle remains untested.
+- **Accessibility trust probe:** the current final bundle returns `AX_TRUSTED=false` when launched through the GUI session. The prior bundle returned `true` before the final rebuild. The strict ad-hoc codesign verification passes.
+- **Speech capability probe:** locale `en-CA` is available and on-device recognition is supported. The non-prompting status probe reports speech and microphone authorization as `notDetermined`; it did not request either permission. The request object supports on-device mode, explicit finalization, and cancellation paths, but real microphone recognition remains untested.
 
 ## Hotkey Probe
 
-**Status: not run.** Test press/release, lost key-up, repeated keydown, conflicts, secure input, sleep, lock, denial, and event handling. Do not assume a generic global monitor can suppress arbitrary events.
+**Status: partial.** Carbon event-handler installation and `RegisterEventHotKey` both returned status `0` for Command-Option-L. Suppression is not claimed, and physical press/release, lost key-up, conflict, secure-input, lock, and app-switch behavior remain untested.
 
 ## Floating Panel Probe
 
@@ -59,7 +59,7 @@ The next user-session action is to remove any old Jev shell entry from System Se
 
 ## Safari Fixture Probe
 
-**Status: not run.** Use a local, versioned, synthetic fixture with a fixed route, known identity, reviewed accessible elements, no redirects/external links/custom schemes/downloads/pop-ups/login state, deterministic states, and fixture version recorded in every acceptance event.
+**Status: blocked by final bundle trust.** The synthetic fixture opened locally in Safari, but the final Jev probe returned `blocked_accessibility` after the bundle rebuild invalidated the prior grant. No native button action or postcondition claim is made yet.
 
 ## Native Readiness Gate
 
