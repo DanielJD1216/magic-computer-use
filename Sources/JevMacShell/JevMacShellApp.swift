@@ -1,6 +1,7 @@
 import AppKit
 import ApplicationServices
 import Darwin
+import JevCore
 import SwiftUI
 
 @main
@@ -70,7 +71,6 @@ final class CommandPanelController {
         panel.makeKeyAndOrderFront(nil)
         panel.orderFrontRegardless()
         NSApp.activate(ignoringOtherApps: true)
-        FileHandle.standardError.write(Data("JEV_PANEL_CREATED visible=\(panel.isVisible) frame=\(NSStringFromRect(panel.frame))\\n".utf8))
     }
 }
 
@@ -80,49 +80,101 @@ final class ShellModel: ObservableObject {
     @Published private(set) var transcript = "Hold to speak"
     @Published private(set) var target = "Safari fixture • not connected"
 
+    private let speechCapture = SpeechCapture()
+
+    init() {
+        speechCapture.onPhaseChange = { [weak self] phase in
+            self?.apply(phase: phase)
+        }
+        speechCapture.onTranscript = { [weak self] transcript in
+            self?.transcript = transcript
+        }
+        speechCapture.onError = { [weak self] message in
+            self?.transcript = message
+        }
+    }
+
     func beginListening() {
-        status = .listening
-        transcript = "Listening…"
+        transcript = "Requesting microphone and speech access…"
+        speechCapture.begin()
     }
 
     func releaseCapture() {
         guard status == .listening else { return }
-        status = .finalizing
         transcript = "Finalizing transcript…"
+        speechCapture.release()
     }
 
     func stop() {
+        speechCapture.cancel()
         status = .stopped
         transcript = "Stopped. No action dispatched."
     }
 
     func reset() {
+        speechCapture.reset()
         status = .armed
         transcript = "Hold to speak"
+    }
+
+    private func apply(phase: SpeechCapturePhase) {
+        switch phase {
+        case .idle:
+            status = .armed
+        case .requestingPermission:
+            status = .requestingPermission
+        case .listening:
+            status = .listening
+            if transcript == "Requesting microphone and speech access…" {
+                transcript = "Listening…"
+            }
+        case .finalizing:
+            status = .finalizing
+        case .completed:
+            status = .completed
+        case .cancelled:
+            status = .stopped
+        case .blocked:
+            status = .blocked
+        case .failed:
+            status = .failed
+        }
     }
 }
 
 enum ShellStatus: String {
     case armed
+    case requestingPermission
     case listening
     case finalizing
+    case completed
     case stopped
+    case blocked
+    case failed
 
     var title: String {
         switch self {
         case .armed: return "Jev Armed"
+        case .requestingPermission: return "Jev Waiting for Permission"
         case .listening: return "Jev Listening"
         case .finalizing: return "Jev Finalizing"
+        case .completed: return "Jev Transcript Ready"
         case .stopped: return "Jev Stopped"
+        case .blocked: return "Jev Permission Needed"
+        case .failed: return "Jev Speech Failed"
         }
     }
 
     var symbol: String {
         switch self {
         case .armed: return "waveform"
+        case .requestingPermission: return "lock.open"
         case .listening: return "mic.fill"
         case .finalizing: return "hourglass"
+        case .completed: return "checkmark.circle"
         case .stopped: return "stop.circle"
+        case .blocked: return "exclamationmark.triangle"
+        case .failed: return "xmark.octagon"
         }
     }
 }
@@ -164,7 +216,7 @@ struct CommandPanel: View {
                     model.beginListening()
                 }
                 .keyboardShortcut("l", modifiers: [.command, .option])
-                .disabled(model.status == .listening || model.status == .finalizing)
+                .disabled(model.status == .requestingPermission || model.status == .listening || model.status == .finalizing)
 
                 Button("Release") {
                     model.releaseCapture()
@@ -181,7 +233,7 @@ struct CommandPanel: View {
                 Button("Reset") {
                     model.reset()
                 }
-                .disabled(model.status == .listening)
+                .disabled(model.status == .requestingPermission || model.status == .listening || model.status == .finalizing)
             }
         }
         .padding(16)
@@ -193,7 +245,7 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Text("Jev is currently running in local fixture mode.")
-            Text("No microphone, Accessibility, Automation, or Jev permissions are requested by this shell.")
+            Text("Microphone and Speech Recognition permissions are requested only after Hold to Speak. Accessibility is used only for the reviewed Safari fixture action.")
                 .foregroundStyle(.secondary)
         }
         .padding(20)
