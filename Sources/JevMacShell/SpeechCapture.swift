@@ -32,8 +32,8 @@ final class SpeechCapture {
         let generation = captureGeneration
         publishPhase()
 
-        SFSpeechRecognizer.requestAuthorization { [weak self] authorization in
-            DispatchQueue.main.async {
+        SFSpeechRecognizer.requestAuthorization { @Sendable authorization in
+            Task { @MainActor [weak self] in
                 guard let self else { return }
                 guard self.isCurrent(generation) else { return }
                 guard authorization == .authorized else {
@@ -44,8 +44,8 @@ final class SpeechCapture {
                     return
                 }
 
-                AVAudioApplication.requestRecordPermission { [weak self] granted in
-                    DispatchQueue.main.async {
+                AVAudioApplication.requestRecordPermission { @Sendable granted in
+                    Task { @MainActor [weak self] in
                         guard let self else { return }
                         guard self.isCurrent(generation) else { return }
                         guard granted else {
@@ -119,29 +119,30 @@ final class SpeechCapture {
         }
         recognitionRequest = request
 
-        recognitionTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
-            DispatchQueue.main.async {
+        recognitionTask = recognizer.recognitionTask(with: request) { @Sendable [weak self] result, error in
+            let transcript = result?.bestTranscription.formattedString
+            let isFinal = result?.isFinal ?? false
+            let errorMessage = error?.localizedDescription
+
+            Task { @MainActor [weak self] in
                 guard let self else { return }
                 guard self.isCurrent(generation) else { return }
-                if let result {
-                    let transcript = result.bestTranscription.formattedString
-                    if !transcript.isEmpty {
-                        self.onTranscript?(transcript)
-                    }
-                    if result.isFinal && self.ledger.phase == .finalizing {
-                        self.finalizationTimeout?.cancel()
-                        self.finalizationTimeout = nil
-                        _ = self.ledger.acceptFinalTranscript()
-                        self.stopRecognition(cancelTask: false)
-                        self.publishPhase()
-                    }
+                if let transcript, !transcript.isEmpty {
+                    self.onTranscript?(transcript)
+                }
+                if isFinal && self.ledger.phase == .finalizing {
+                    self.finalizationTimeout?.cancel()
+                    self.finalizationTimeout = nil
+                    _ = self.ledger.acceptFinalTranscript()
+                    self.stopRecognition(cancelTask: false)
+                    self.publishPhase()
                 }
 
-                if let error, self.ledger.phase == .listening || self.ledger.phase == .finalizing {
+                if let errorMessage, self.ledger.phase == .listening || self.ledger.phase == .finalizing {
                     _ = self.ledger.fail()
                     self.captureGeneration += 1
                     self.stopRecognition(cancelTask: true)
-                    self.onError?(error.localizedDescription)
+                    self.onError?(errorMessage)
                     self.publishPhase()
                 }
             }
