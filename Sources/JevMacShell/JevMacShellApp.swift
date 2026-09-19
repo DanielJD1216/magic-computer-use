@@ -12,6 +12,9 @@ struct JevMacShellApp: App {
             print("AX_TRUSTED=\(AXIsProcessTrusted())")
             Darwin.exit(0)
         }
+        if NativeProbe.runIfRequested() {
+            Darwin.exit(0)
+        }
     }
 
     var body: some Scene {

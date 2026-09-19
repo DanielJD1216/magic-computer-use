@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jev Fixture v1 | Landing</title>
+</head>
+<body data-fixture-version="safari-fixture-v1">
+  <main>
+    <h1>Jev Fixture v1</h1>
+    <p id="fixture-state" role="status" aria-live="polite">State: landing</p>
+    <button id="reviewed-view" type="button" aria-label="Select reviewed fixture view">
+      Show reviewed fixture view
+    </button>
+  </main>
+  <script>
+    document.getElementById('reviewed-view').addEventListener('click', function () {
+      document.getElementById('fixture-state').textContent = 'State: reviewed';
+      document.title = 'Jev Fixture v1 | Reviewed';
+      this.disabled = true;
+    });
+  </script>
+</body>
+</html>
