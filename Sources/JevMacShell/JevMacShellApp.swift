@@ -1,3 +1,4 @@
+import AppKit
 import ApplicationServices
 import Darwin
 import SwiftUI
@@ -5,9 +6,7 @@ import SwiftUI
 @main
 @MainActor
 struct JevMacShellApp: App {
-    @Environment(\.openWindow) private var openWindow
-    @StateObject private var model = ShellModel()
-    @State private var didOpenCommandPanel = false
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     init() {
         if CommandLine.arguments.contains("--probe-accessibility") {
@@ -21,24 +20,43 @@ struct JevMacShellApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            CommandPanel(model: model)
-                .onAppear {
-                    guard !didOpenCommandPanel else { return }
-                    didOpenCommandPanel = true
-                    openWindow(id: "command-panel")
-                }
+            CommandPanel(model: appDelegate.model)
         } label: {
-            Label(model.status.title, systemImage: model.status.symbol)
+            Label(appDelegate.model.status.title, systemImage: appDelegate.model.status.symbol)
         }
-
-        WindowGroup("Jev Command Panel", id: "command-panel") {
-            CommandPanel(model: model)
-        }
-        .defaultSize(width: 380, height: 300)
 
         Settings {
             SettingsView()
         }
+    }
+}
+
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    let model = ShellModel()
+    private var panel: NSPanel?
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        let panel = NSPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 380, height: 300),
+            styleMask: [.titled, .closable, .resizable, .miniaturizable],
+            backing: .buffered,
+            defer: false
+        )
+        panel.title = "Jev Command Panel"
+        panel.isReleasedWhenClosed = false
+        panel.isMovableByWindowBackground = true
+        panel.level = .floating
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.contentView = NSHostingView(rootView: CommandPanel(model: model))
+        panel.center()
+        self.panel = panel
+        panel.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
     }
 }
 
