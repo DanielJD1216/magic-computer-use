@@ -31,7 +31,7 @@ struct JevMacShellApp: App {
             Label(model.status.title, systemImage: model.status.symbol)
         }
 
-        Window("Jev Command Panel", id: "command-panel") {
+        WindowGroup("Jev Command Panel", id: "command-panel") {
             CommandPanel(model: model)
         }
         .defaultSize(width: 380, height: 300)
