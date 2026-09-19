@@ -37,6 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var panel: NSPanel?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NSLog("JEV_PANEL_DID_FINISH_LAUNCH")
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 380, height: 300),
             styleMask: [.titled, .closable, .resizable, .miniaturizable],
@@ -55,6 +56,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.makeKeyAndOrderFront(nil)
         panel.orderFrontRegardless()
         NSApp.activate(ignoringOtherApps: true)
+        NSLog("JEV_PANEL_ORDERED_FRONT visible=\(panel.isVisible) key=\(panel.isKeyWindow)")
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
