@@ -15,6 +15,7 @@ final class SpeechCapture {
     private var recognitionTask: SFSpeechRecognitionTask?
     private var finalizationTimeout: DispatchWorkItem?
     private var ledger = SpeechCaptureLedger()
+    private var captureGeneration = 0
 
     var phase: SpeechCapturePhase {
         ledger.phase
@@ -27,24 +28,34 @@ final class SpeechCapture {
 
     func begin() {
         guard ledger.beginPermissionRequest() else { return }
+        captureGeneration += 1
+        let generation = captureGeneration
         publishPhase()
 
         SFSpeechRecognizer.requestAuthorization { [weak self] authorization in
             DispatchQueue.main.async {
                 guard let self else { return }
+                guard self.isCurrent(generation) else { return }
                 guard authorization == .authorized else {
-                    self.transitionToBlocked(message: "Speech recognition permission is required.")
+                    self.transitionToBlocked(
+                        message: "Speech recognition permission is required.",
+                        generation: generation
+                    )
                     return
                 }
 
                 AVAudioApplication.requestRecordPermission { [weak self] granted in
                     DispatchQueue.main.async {
                         guard let self else { return }
+                        guard self.isCurrent(generation) else { return }
                         guard granted else {
-                            self.transitionToBlocked(message: "Microphone permission is required.")
+                            self.transitionToBlocked(
+                                message: "Microphone permission is required.",
+                                generation: generation
+                            )
                             return
                         }
-                        self.startRecognition()
+                        self.startRecognition(generation: generation)
                     }
                 }
             }
@@ -59,10 +70,13 @@ final class SpeechCapture {
         audioEngine.inputNode.removeTap(onBus: 0)
         recognitionRequest?.endAudio()
 
+        let generation = captureGeneration
         let timeout = DispatchWorkItem { [weak self] in
             guard let self else { return }
+            guard self.isCurrent(generation) else { return }
             guard self.ledger.phase == .finalizing else { return }
             _ = self.ledger.fail()
+            self.captureGeneration += 1
             self.stopRecognition(cancelTask: true)
             self.onError?("Speech finalization timed out.")
             self.publishPhase()
@@ -73,6 +87,7 @@ final class SpeechCapture {
 
     func cancel() {
         guard ledger.cancel() else { return }
+        captureGeneration += 1
         stopRecognition(cancelTask: true)
         publishPhase()
     }
@@ -80,15 +95,18 @@ final class SpeechCapture {
     func reset() {
         finalizationTimeout?.cancel()
         finalizationTimeout = nil
+        captureGeneration += 1
         stopRecognition(cancelTask: true)
         ledger.reset()
         publishPhase()
     }
 
-    private func startRecognition() {
+    private func startRecognition(generation: Int) {
+        guard isCurrent(generation) else { return }
         guard ledger.authorize() else { return }
         guard let recognizer, recognizer.isAvailable else {
             _ = ledger.fail()
+            captureGeneration += 1
             onError?("On-device speech recognition is unavailable.")
             publishPhase()
             return
@@ -104,6 +122,7 @@ final class SpeechCapture {
         recognitionTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
             DispatchQueue.main.async {
                 guard let self else { return }
+                guard self.isCurrent(generation) else { return }
                 if let result {
                     let transcript = result.bestTranscription.formattedString
                     if !transcript.isEmpty {
@@ -120,6 +139,7 @@ final class SpeechCapture {
 
                 if let error, self.ledger.phase == .listening || self.ledger.phase == .finalizing {
                     _ = self.ledger.fail()
+                    self.captureGeneration += 1
                     self.stopRecognition(cancelTask: true)
                     self.onError?(error.localizedDescription)
                     self.publishPhase()
@@ -139,6 +159,7 @@ final class SpeechCapture {
             publishPhase()
         } catch {
             _ = ledger.fail()
+            captureGeneration += 1
             stopRecognition(cancelTask: true)
             onError?(error.localizedDescription)
             publishPhase()
@@ -155,10 +176,16 @@ final class SpeechCapture {
         recognitionRequest = nil
     }
 
-    private func transitionToBlocked(message: String) {
+    private func transitionToBlocked(message: String, generation: Int) {
+        guard isCurrent(generation) else { return }
         _ = ledger.denyPermission()
+        captureGeneration += 1
         onError?(message)
         publishPhase()
+    }
+
+    private func isCurrent(_ generation: Int) -> Bool {
+        captureGeneration == generation
     }
 
     private func publishPhase() {
