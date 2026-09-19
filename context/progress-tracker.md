@@ -9,6 +9,7 @@ Update this file after every meaningful change.
 - Full Xcode is installed and usable through `DEVELOPER_DIR`.
 - The pure SwiftPM safety core and minimal shell compile successfully.
 - The pure safety suite has 17 passing target-Mac tests.
+- Accessibility trust is not granted to the remote probe process, and no signing identities are installed.
 - Native runtime feasibility gates remain open.
 
 ## Current Goal
@@ -42,9 +43,9 @@ Run native speech, hotkey, panel, and local Safari fixture probes without enabli
 
 ## Next Up
 
-1. Run native speech finalization/cancellation in the user session without silently requesting remote speech.
-2. Run hotkey and panel focus probes; record permission behavior without broadening access.
-3. Create a versioned synthetic local Safari fixture and observe exact Accessibility identity.
+1. Create a stable local shell bundle and define the permission/signing path.
+2. Run the non-prompting Accessibility trust check and record the current permission boundary.
+3. Run isolated speech finalization/cancellation, on-device mode, hotkey, floating panel, Safari Accessibility, native fixture action, and exact verifier probes after a stable app bundle is available.
 4. Implement one trusted fixture operation and exact postcondition verifier.
 5. Complete fake orchestrator, response validation, redaction, and budget tests.
 6. Run the fixture acceptance matrix and egress canaries.

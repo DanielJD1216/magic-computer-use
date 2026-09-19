@@ -13,11 +13,12 @@
 - Xcode: `26.6`, build `17F113`
 - Xcode app: `/Applications/Xcode.app`
 - Xcode SDK: macOS `26.5`
+- Code-signing identities: `0 valid identities found` in the user keychain
 
 ## Repository and Build Status
 
 - Repository cloned on the Mac at `~/Dev Life/active/Meet Jev, Fastest Computer Use`.
-- Mac working copy is clean and matches `0e1db42095b2c55d22ed1e35ddc32b8f95c74a1a`.
+- Mac working copy is clean and matches `238415b67e82fb0c645953fff7ca6b7c9d4eb26c`.
 - Project format: Swift Package Manager core package, with `Package.swift` targeting macOS 14 and an executable `JevMacShell` target.
 - `xcodebuild -checkFirstLaunchStatus` passed under `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 - `xcodebuild -license status` passed under the same developer directory.
@@ -30,7 +31,7 @@
 ## Gate Status
 
 - Repository orientation: **partial**. Runtime, Xcode, SDK, SwiftPM format, and exact test/build commands are recorded. Signing, sandbox, app bundle, permissions, hotkey path, and applicable TypeSafe agreement remain open.
-- Native feasibility: **partial**. The shell launches, and `en-CA` Speech reports available with on-device recognition support. Speech lifecycle, hotkey lifecycle, panel focus, Safari Accessibility identity, native fixture action, and exact verification have not been observed.
+- Native feasibility: **permission-blocked**. The shell launches and `en-CA` Speech reports available with on-device recognition support, but `AXIsProcessTrusted()` returns `false`; signing identities are absent. Speech lifecycle, hotkey lifecycle, panel focus, Safari Accessibility identity, native fixture action, and exact verification have not been observed.
 - Fake safety loop: **partial**. Seventeen pure domain, transcript, lifecycle, and bounded-selection tests pass. Fake orchestrator, response transport parsing, redaction, budget, and fixture adapter tests remain.
 - Live Jev: **disabled**. No credential or live request is needed.
 
@@ -44,9 +45,8 @@ sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 
 The next implementation gate is native speech/hotkey/panel and local Safari fixture probing. Do not install or request Jev credentials as a substitute.
 
-## Speech Probe
-
-**Capability probe observed:** locale `en-CA`, recognizer available, on-device recognition supported. **Lifecycle probe not run:** partial revisions, finalization after key release, cancellation, delayed/missing final callbacks, interruption, sleep, and permission withdrawal still require the native adapter and user-session observation.
+- **Accessibility trust probe:** `AXIsProcessTrusted()` returned `false` for the remote probe process. No permission prompt was triggered.
+- **Speech capability probe:** locale `en-CA` returned available and on-device recognition supported. The actual recognition lifecycle remains untested.
 
 ## Hotkey Probe
 
