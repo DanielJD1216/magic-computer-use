@@ -51,7 +51,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.contentView = NSHostingView(rootView: CommandPanel(model: model))
         panel.center()
         self.panel = panel
+        NSApp.setActivationPolicy(.regular)
         panel.makeKeyAndOrderFront(nil)
+        panel.orderFrontRegardless()
         NSApp.activate(ignoringOtherApps: true)
     }
 
