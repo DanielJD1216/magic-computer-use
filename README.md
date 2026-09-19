@@ -6,7 +6,7 @@ A private macOS menu-bar prototype for testing bounded computer-use control with
 
 The repository follows the corrected v0.1 Safari-fixture-first handoff in `context/specs/00-build-plan.md`. It contains the product and safety contract, exact capability registry, egress boundary, experiment protocol, platform probe checklist, UX states, action policy, test matrix, and a SwiftPM core plus shell.
 
-The pure Swift safety core is implemented and verified on the target Mac with 20 passing tests. The minimal SwiftUI menu-bar shell launches a visible AppKit command panel and retains the menu-bar item in a stable ad-hoc signed app bundle. The final bundle has passed the trusted Safari action and exact postcondition probe. Speech permissions/lifecycle, physical hotkey behavior, panel focus, and live Jev remain unverified or disabled.
+The pure Swift safety core is implemented and verified on the target Mac with 23 passing tests. The minimal SwiftUI menu-bar shell launches a visible AppKit command panel and retains the menu-bar item in a stable ad-hoc signed app bundle. The shell now contains a real on-device push-to-talk Speech/AVFoundation adapter that requests permissions only after explicit user action. Runtime permission prompts and speech finalization remain unverified; the trusted Safari action, physical hotkey behavior, panel focus, and live Jev remain unverified or disabled.
 
 The target Mac is reachable through Tailscale and SSH is verified. Full Xcode 26.6 is installed and usable through `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`. The WSL host remains unable to build Swift natively.
 
@@ -37,7 +37,7 @@ When that gate is closed, credentials must be entered through the approved Mac/K
 - `Design/`: UI/UX brief and acceptance checklist.
 - `Docs/`: product contract, capability registry, policy, egress, probes, tests, experiments, and publication clearance.
 - `Sources/JevCore/`: pure capability, policy, state, transcript, selection, and authority logic.
-- `Sources/JevMacShell/`: permission-free SwiftUI menu-bar shell.
+- `Sources/JevMacShell/`: SwiftUI menu-bar shell, visible command panel, and bounded Speech/AVFoundation adapter.
 - `Tests/JevCoreTests/`: deterministic safety and lifecycle tests.
 - `context/`: project, architecture, UI, code, workflow, progress truth, and build handoff.
 - `context/specs/00-build-plan.md`: corrected v2 implementation handoff.
@@ -46,4 +46,4 @@ When that gate is closed, credentials must be entered through the approved Mac/K
 
 ## Next Gate
 
-Run native speech, hotkey, panel, Safari Accessibility, native action, and verifier probes using the verified Xcode toolchain. Do not treat passing core tests or a process-launch smoke test as evidence that the native app is fully verified or that Jev has been called.
+Run the explicit speech permission and lifecycle probe, then native hotkey, panel, Safari Accessibility, native action, and verifier probes using the verified Xcode toolchain. Do not treat passing core tests or a process-launch smoke test as evidence that the native app is fully verified or that Jev has been called.

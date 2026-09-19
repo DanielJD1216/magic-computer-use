@@ -8,8 +8,8 @@ Update this file after every meaningful change.
 - Authenticated Tailscale SSH to the target Mac is complete.
 - Full Xcode is installed and usable through `DEVELOPER_DIR`.
 - The pure SwiftPM safety core and minimal shell compile successfully.
-- The pure safety suite has 20 passing target-Mac tests.
-- Accessibility trust is granted to the final clean ad-hoc app bundle in the GUI session; no developer signing identities are installed.
+- The pure safety suite has 23 passing target-Mac tests.
+- The latest speech-enabled ad-hoc rebuild is not yet Accessibility-trusted; no developer signing identities are installed.
 - Native runtime feasibility gates remain open.
 
 ## Current Goal
@@ -35,22 +35,23 @@ Run native speech, hotkey, panel, and local Safari fixture probes without enabli
 - Added the deterministic fake Safari fixture adapter and exact verifier.
 - Added bounded native speech, Carbon hotkey, and Safari Accessibility probe paths plus the versioned local Safari fixture.
 - Added an AppKit command panel that is visibly created at launch while retaining the menu-bar status item.
-- Verified the final clean bundle creates an on-screen command panel and passes the GUI-session Accessibility trust check.
-- Verified the final clean bundle's synthetic Safari identity, fixed native button action, and exact reviewed-state postcondition.
-- Verified `swift test --disable-sandbox`: 20 tests, 0 failures.
+- Verified the prior final bundle created an on-screen command panel and passed the GUI-session Accessibility trust check.
+- Verified the prior trusted bundle's synthetic Safari identity, fixed native button action, and exact reviewed-state postcondition.
+- Added the real on-device Speech/AVFoundation push-to-talk adapter with explicit permission sequencing, finalization timeout, cancellation, and stale-callback rejection.
+- Verified `swift test --disable-sandbox`: 23 tests, 0 failures.
 - Cloned and synced the repository to the Mac at `~/Dev Life/active/Meet Jev, Fastest Computer Use`.
-- Probed Speech for `en-CA`: available and on-device recognition supported.
+- Probed Speech for `en-CA`: available and on-device recognition supported; latest non-prompting status remains not determined until Hold to Speak is pressed.
 - No Jev credential has been requested or used.
 
 ## In Progress
 
-- Native speech lifecycle, hotkey, panel focus, and Safari fixture probes.
+- User-triggered native speech permission prompt and speech lifecycle, hotkey, panel focus, and Safari fixture probes.
 - Fake orchestrator, response transport parsing, redaction, and budget tests.
 
 ## Next Up
 
-1. Complete real speech permission/lifecycle probes only after the microphone and speech permission decision is explicit.
-2. Complete physical hotkey press/release and floating-panel focus/restoration probes without rebuilding the trusted app bundle.
+1. Press Hold to Speak in the installed app and allow Speech Recognition followed by Microphone; then verify partial/final transcript and cancellation.
+2. Re-add the latest ad-hoc app bundle to Accessibility after no further rebuild, then complete physical hotkey press/release and floating-panel focus/restoration probes.
 3. Complete fake orchestrator, response validation, redaction, and budget tests.
 4. Run the fixture acceptance matrix and egress canaries.
 5. Resolve Jev/TypeSafe private-use authorization, direct client versus relay, provider retention, and credential-entry path before live transport.

@@ -19,21 +19,21 @@
 ## Repository and Build Status
 
 - Repository cloned on the Mac at `~/Dev Life/active/Meet Jev, Fastest Computer Use`.
-- Mac working copy is clean and matches `fbbf42f7a74728860db9c958f3e11f0973bdd4ac` for the final app build; repository documentation is current through the follow-up evidence commit.
+- Mac working copy is clean and matches `2e0c697c23161aeccc120c951f058d6f5a8ce16e` for the speech-enabled app build; repository documentation is current through the follow-up evidence commit.
 - Project format: Swift Package Manager core package, with `Package.swift` targeting macOS 14 and an executable `JevMacShell` target.
 - `xcodebuild -checkFirstLaunchStatus` passed under `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 - `xcodebuild -license status` passed under the same developer directory.
 - `swift build --product JevMacShell --disable-sandbox` passed on the target Mac.
-- `swift test --disable-sandbox` passed on the target Mac: 20 tests, 0 failures.
-- A stable ad-hoc signed shell bundle exists at `~/Applications/JevMacShell-Prototype.app`; it launches a visible command panel and retains the menu-bar item. This proves process launch and on-screen window creation, not focus, permission, or Safari acceptance behavior.
+- `swift test --disable-sandbox` passed on the target Mac: 23 tests, 0 failures.
+- A stable ad-hoc signed shell bundle exists at `~/Applications/JevMacShell-Prototype.app`; it launches a visible command panel and retains the menu-bar item. The latest bundle contains the real permission-gated Speech/AVFoundation adapter. This proves process launch and on-screen window creation, not focus, permission, or Safari acceptance behavior.
 - The system-wide selector still points to `/Library/Developer/CommandLineTools`; per-command `DEVELOPER_DIR` is the verified workaround. Switching it globally requires the Mac administrator password and was not attempted interactively.
 - Swift command-line type-check probes passed for `Foundation`, `AppKit`, `SwiftUI`, `Speech`, `AVFoundation`, `ApplicationServices`, and `Carbon`.
 
 ## Gate Status
 
 - Repository orientation: **partial**. Runtime, Xcode, SDK, SwiftPM format, and exact test/build commands are recorded. Signing, sandbox, app bundle, permissions, hotkey path, and applicable TypeSafe agreement remain open.
-- Native feasibility: **partial and probeable**. The final clean bundle creates an on-screen command panel, retains the menu-bar item, and is Accessibility-trusted in the GUI session. Carbon hotkey registration succeeds. The final bundle's synthetic Safari identity, native button action, and exact postcondition verifier pass. Real speech permissions/lifecycle, physical hotkey lifecycle, and panel focus remain unverified.
-- Fake safety loop: **partial**. Twenty pure domain, transcript, lifecycle, bounded-selection, and fake-fixture tests pass. Fake orchestrator, response transport parsing, redaction, and budget tests remain.
+- Native feasibility: **partial and probeable**. The latest speech-enabled bundle creates an on-screen command panel and retains the menu-bar item. Its ad-hoc rebuild currently returns `AX_TRUSTED=false`; Accessibility must be re-added after the final build. Carbon hotkey registration succeeds. The prior trusted bundle's synthetic Safari identity, native button action, and exact postcondition verifier pass. Real speech permission prompts/finalization, physical hotkey lifecycle, and panel focus remain unverified.
+- Fake safety loop: **partial**. Twenty-three pure domain, transcript, lifecycle, speech-state, bounded-selection, and fake-fixture tests pass. Fake orchestrator, response transport parsing, redaction, and budget tests remain.
 - Live Jev: **disabled**. No credential or live request is needed.
 
 ## Required Next Mac Action
@@ -44,10 +44,10 @@ Continue using `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` for re
 sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 ```
 
-The final clean UI bundle is trusted in the GUI session. No further app rebuild is planned before the next native probes. Do not install or request Jev credentials as a substitute.
+The latest speech-enabled UI bundle is installed and running, but its ad-hoc code hash changed and its Accessibility trust is not yet restored. Do not rebuild after the next Accessibility re-add. Do not install or request Jev credentials as a substitute.
 
-- **Accessibility trust probe:** the final clean bundle returns `AX_TRUSTED=true` when launched through the GUI session. Strict ad-hoc codesign verification passes.
-- **Speech capability probe:** locale `en-CA` is available and on-device recognition is supported. The non-prompting status probe reports speech and microphone authorization as `notDetermined`; it did not request either permission. The request object supports on-device mode, explicit finalization, and cancellation paths, but real microphone recognition remains untested.
+- **Accessibility trust probe:** the latest speech-enabled bundle returns `AX_TRUSTED=false` because the ad-hoc code hash changed. Strict ad-hoc codesign verification passes.
+- **Speech capability probe:** locale `en-CA` is available and on-device recognition is supported. The latest non-prompting status probe reports speech and microphone authorization as `notDetermined`; it did not request either permission. The installed adapter now requests Speech Recognition first and Microphone second after Hold to Speak, uses on-device mode when supported, and has explicit finalization, timeout, cancellation, and stale-callback paths. Runtime user-session recognition remains untested.
 
 ## Hotkey Probe
 
@@ -63,4 +63,4 @@ The final clean UI bundle is trusted in the GUI session. No further app rebuild 
 
 ## Native Readiness Gate
 
-Gate 1 remains open for real speech finalization/cancellation, physical hotkey lifecycle, and panel focus. The final bundle's Accessibility target identity, native fixture action, exact postcondition verification, and launch surface are now observed on the target Mac. Passing pure Swift tests or process launch alone still does not close native feasibility.
+Gate 1 remains open for the user-triggered speech permission/finalization/cancellation path, latest-bundle Accessibility re-grant, physical hotkey lifecycle, and panel focus. The prior trusted bundle's Accessibility target identity, native fixture action, exact postcondition verification, and the latest bundle's launch surface are observed on the target Mac. Passing pure Swift tests or process launch alone still does not close native feasibility.
