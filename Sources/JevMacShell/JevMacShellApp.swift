@@ -1,9 +1,18 @@
+import ApplicationServices
+import Darwin
 import SwiftUI
 
 @main
 @MainActor
 struct JevMacShellApp: App {
     @StateObject private var model = ShellModel()
+
+    init() {
+        if CommandLine.arguments.contains("--probe-accessibility") {
+            print("AX_TRUSTED=\(AXIsProcessTrusted())")
+            Darwin.exit(0)
+        }
+    }
 
     var body: some Scene {
         MenuBarExtra {
