@@ -5,7 +5,9 @@ import SwiftUI
 @main
 @MainActor
 struct JevMacShellApp: App {
+    @Environment(\.openWindow) private var openWindow
     @StateObject private var model = ShellModel()
+    @State private var didOpenCommandPanel = false
 
     init() {
         if CommandLine.arguments.contains("--probe-accessibility") {
@@ -20,9 +22,19 @@ struct JevMacShellApp: App {
     var body: some Scene {
         MenuBarExtra {
             CommandPanel(model: model)
+                .onAppear {
+                    guard !didOpenCommandPanel else { return }
+                    didOpenCommandPanel = true
+                    openWindow(id: "command-panel")
+                }
         } label: {
             Label(model.status.title, systemImage: model.status.symbol)
         }
+
+        Window("Jev Command Panel", id: "command-panel") {
+            CommandPanel(model: model)
+        }
+        .defaultSize(width: 380, height: 300)
 
         Settings {
             SettingsView()
