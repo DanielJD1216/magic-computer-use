@@ -23,7 +23,7 @@ Notes, arbitrary browser control, generic Mac automation, shell, AppleScript, cl
 
 ## Current Status
 
-The repository contains the v2 implementation handoff, safety artifacts, SwiftPM core, and 20 passing target-Mac pure tests. The minimal SwiftUI menu-bar shell builds and launches in a stable temporary unsigned bundle. No live Jev adapter, Safari fixture action, or native acceptance evidence is claimed.
+The repository contains the v2 implementation handoff, safety artifacts, SwiftPM core, and 20 passing target-Mac pure tests. The minimal SwiftUI menu-bar shell builds and launches in a stable ad-hoc signed bundle. The target Mac has observed the synthetic Safari identity, one trusted native fixture action, and exact postcondition verification. Speech lifecycle, physical hotkey behavior, panel focus, and live Jev remain open or disabled.
 
 The development host is Ubuntu 24.04 under WSL2 and does not have a Swift toolchain. The target Mac is reachable through Tailscale and SSH is authenticated. Full Xcode 26.6 is available remotely through `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 

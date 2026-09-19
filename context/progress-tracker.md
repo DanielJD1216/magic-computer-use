@@ -9,7 +9,7 @@ Update this file after every meaningful change.
 - Full Xcode is installed and usable through `DEVELOPER_DIR`.
 - The pure SwiftPM safety core and minimal shell compile successfully.
 - The pure safety suite has 20 passing target-Mac tests.
-- Accessibility trust is not granted to the current final ad-hoc app bundle after its rebuild; no developer signing identities are installed.
+- Accessibility trust is granted to the final ad-hoc app bundle in the GUI session; no developer signing identities are installed.
 - Native runtime feasibility gates remain open.
 
 ## Current Goal
@@ -34,6 +34,7 @@ Run native speech, hotkey, panel, and local Safari fixture probes without enabli
 - Created the stable ad-hoc signed bundle at `~/Applications/JevMacShell-Prototype.app`; strict codesign verification passes.
 - Added the deterministic fake Safari fixture adapter and exact verifier.
 - Added bounded native speech, Carbon hotkey, and Safari Accessibility probe paths plus the versioned local Safari fixture.
+- Verified the final ad-hoc bundle's GUI-session Accessibility trust, synthetic Safari identity, fixed native button action, and exact reviewed-state postcondition.
 - Verified `swift test --disable-sandbox`: 20 tests, 0 failures.
 - Cloned and synced the repository to the Mac at `~/Dev Life/active/Meet Jev, Fastest Computer Use`.
 - Probed Speech for `en-CA`: available and on-device recognition supported.
@@ -46,12 +47,11 @@ Run native speech, hotkey, panel, and local Safari fixture probes without enabli
 
 ## Next Up
 
-1. Remove any old Jev shell entry from Accessibility and re-add the final ad-hoc signed `~/Applications/JevMacShell-Prototype.app` with its toggle enabled; do not rebuild afterward.
-2. Run the final-bundle GUI trust check, then Safari Accessibility identity, native fixture action, and exact verifier probes.
-3. Complete the real speech permission/lifecycle decision, hotkey press/release lifecycle, and floating-panel focus probes.
-4. Complete fake orchestrator, response validation, redaction, and budget tests.
-5. Run the fixture acceptance matrix and egress canaries.
-6. Resolve Jev/TypeSafe private-use authorization, direct client versus relay, provider retention, and credential-entry path before live transport.
+1. Run real speech permission/lifecycle probes only after the microphone and speech permission decision is explicit.
+2. Complete physical hotkey press/release and floating-panel focus/restoration probes without rebuilding the trusted app bundle.
+3. Complete fake orchestrator, response validation, redaction, and budget tests.
+4. Run the fixture acceptance matrix and egress canaries.
+5. Resolve Jev/TypeSafe private-use authorization, direct client versus relay, provider retention, and credential-entry path before live transport.
 
 ## Architecture Decisions
 
