@@ -6,9 +6,12 @@ import SwiftUI
 @main
 @MainActor
 struct JevMacShellApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @StateObject private var model: ShellModel
 
     init() {
+        let model = ShellModel()
+        _model = StateObject(wrappedValue: model)
+
         if CommandLine.arguments.contains("--probe-accessibility") {
             print("AX_TRUSTED=\(AXIsProcessTrusted())")
             Darwin.exit(0)
@@ -16,13 +19,17 @@ struct JevMacShellApp: App {
         if NativeProbe.runIfRequested() {
             Darwin.exit(0)
         }
+
+        DispatchQueue.main.async {
+            CommandPanelController.shared.show(model: model)
+        }
     }
 
     var body: some Scene {
         MenuBarExtra {
-            CommandPanel(model: appDelegate.model)
+            CommandPanel(model: model)
         } label: {
-            Label(appDelegate.model.status.title, systemImage: appDelegate.model.status.symbol)
+            Label(model.status.title, systemImage: model.status.symbol)
         }
 
         Settings {
@@ -32,12 +39,18 @@ struct JevMacShellApp: App {
 }
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
-    let model = ShellModel()
+final class CommandPanelController {
+    static let shared = CommandPanelController()
+
     private var panel: NSPanel?
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        NSLog("JEV_PANEL_DID_FINISH_LAUNCH")
+    func show(model: ShellModel) {
+        if let panel, panel.isVisible {
+            panel.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 380, height: 300),
             styleMask: [.titled, .closable, .resizable, .miniaturizable],
@@ -51,16 +64,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.contentView = NSHostingView(rootView: CommandPanel(model: model))
         panel.center()
+        panel.isReleasedWhenClosed = false
         self.panel = panel
+
         NSApp.setActivationPolicy(.regular)
         panel.makeKeyAndOrderFront(nil)
         panel.orderFrontRegardless()
         NSApp.activate(ignoringOtherApps: true)
-        NSLog("JEV_PANEL_ORDERED_FRONT visible=\(panel.isVisible) key=\(panel.isKeyWindow)")
-    }
-
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-        false
     }
 }
 
