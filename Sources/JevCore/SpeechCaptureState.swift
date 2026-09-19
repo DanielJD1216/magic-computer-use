@@ -22,6 +22,18 @@ public struct SpeechCaptureLedger: Equatable, Sendable {
         return true
     }
 
+    public mutating func prepareForNextCapture() -> Bool {
+        switch phase {
+        case .idle:
+            return true
+        case .requestingPermission, .listening, .finalizing:
+            return false
+        case .completed, .cancelled, .blocked, .failed:
+            phase = .idle
+            return true
+        }
+    }
+
     public mutating func authorize() -> Bool {
         guard phase == .requestingPermission else { return false }
         phase = .listening

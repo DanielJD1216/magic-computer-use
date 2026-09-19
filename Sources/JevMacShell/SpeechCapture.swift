@@ -34,8 +34,10 @@ final class SpeechCapture {
         recognizer?.defaultTaskHint = .dictation
     }
 
-    func begin() {
-        guard ledger.beginPermissionRequest() else { return }
+    @discardableResult
+    func begin() -> Bool {
+        guard ledger.prepareForNextCapture() else { return false }
+        guard ledger.beginPermissionRequest() else { return false }
         captureGeneration += 1
         let generation = captureGeneration
         publishPhase()
@@ -68,6 +70,7 @@ final class SpeechCapture {
                 }
             }
         }
+        return true
     }
 
     func release() {

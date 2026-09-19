@@ -148,8 +148,14 @@ final class ShellModel: ObservableObject {
         sessionLedger.startNewGoal()
         sessionLedger.beginListening()
         activeCallback = nil
+        status = .requestingPermission
         transcript = "Requesting microphone and speech access…"
-        speechCapture.begin()
+        guard speechCapture.begin() else {
+            status = .blocked
+            transcript = "Speech capture could not start from the current lifecycle state."
+            actionDetail = "No action dispatched. Press Reset before trying again."
+            return
+        }
     }
 
     func releaseCapture() {
