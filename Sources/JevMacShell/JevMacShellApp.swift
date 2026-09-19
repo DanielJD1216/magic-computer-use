@@ -246,7 +246,6 @@ final class ShellModel: ObservableObject {
         guard let selectedCapabilityID else {
             status = .blocked
             actionDetail = "No approved fixture capability matched this final transcript."
-            transcript = "No bounded fixture action matched that request."
             return
         }
 

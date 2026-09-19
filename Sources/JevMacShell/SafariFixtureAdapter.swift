@@ -96,10 +96,14 @@ final class SafariFixtureAdapter {
             return nil
         }
 
-        let view: FixtureView = Self.containsExpectedState(in: window)
-            || title.localizedCaseInsensitiveContains("Reviewed")
-            ? .reviewed
-            : .landing
+        let view: FixtureView
+        if Self.hasReviewedPostcondition(title: title, in: window) {
+            view = .reviewed
+        } else if Self.hasLandingPostcondition(title: title, in: window) {
+            view = .landing
+        } else {
+            return nil
+        }
 
         return SafariFixtureRuntimeObservation(
             binding: TargetBinding(
@@ -162,7 +166,7 @@ final class SafariFixtureAdapter {
             throw SafariFixtureAdapterError.windowIdentityUnavailable
         }
 
-        if Self.containsExpectedState(in: window) || title.localizedCaseInsensitiveContains("Reviewed") {
+        if Self.hasReviewedPostcondition(title: title, in: window) {
             return SafariFixtureRuntimeObservation(
                 binding: actualTarget,
                 view: .reviewed,
@@ -231,8 +235,23 @@ final class SafariFixtureAdapter {
         }
     }
 
-    private static func containsExpectedState(in window: AXUIElement) -> Bool {
+    private static func hasReviewedPostcondition(title: String, in window: AXUIElement) -> Bool {
+        title.hasSuffix("| Reviewed")
+            && currentFixtureState(in: window) == reviewedState
+    }
+
+    private static func hasLandingPostcondition(title: String, in window: AXUIElement) -> Bool {
+        title.hasSuffix("| Landing")
+            && currentFixtureState(in: window) == "State: landing"
+    }
+
+    private static func currentFixtureState(in window: AXUIElement) -> String? {
         find(in: window, depth: 0) { element in
+            guard isVisible(element) else { return false }
+            let role = stringAttribute(element, kAXRoleAttribute)
+            guard role == kAXStaticTextRole || role == "AXText" || role == "AXStatus" else {
+                return false
+            }
             let values = [
                 stringAttribute(element, kAXTitleAttribute),
                 stringAttribute(element, kAXValueAttribute),
@@ -240,8 +259,23 @@ final class SafariFixtureAdapter {
             ]
             return values.contains {
                 normalize($0) == normalize(reviewedState)
+                    || normalize($0) == normalize("State: landing")
             }
-        } != nil
+        }.flatMap { element in
+            [
+                stringAttribute(element, kAXTitleAttribute),
+                stringAttribute(element, kAXValueAttribute),
+                stringAttribute(element, kAXDescriptionAttribute)
+            ].first {
+                let normalized = normalize($0)
+                return normalized == normalize(reviewedState)
+                    || normalized == normalize("State: landing")
+            }
+        }
+    }
+
+    private static func isVisible(_ element: AXUIElement) -> Bool {
+        (attributeValue(element, kAXHiddenAttribute) as? Bool) != true
     }
 
     private static func find(
