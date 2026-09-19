@@ -283,11 +283,19 @@ final class SafariFixtureAdapter {
         guard let raw = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else {
             return nil
         }
-        return raw.first { info in
+        let ownedWindows = raw.filter { info in
             guard let ownerPID = info[kCGWindowOwnerPID as String] as? Int,
                   ownerPID == Int(processID) else { return false }
+            return true
+        }
+        if let exact = ownedWindows.first(where: { info in
             let windowName = info[kCGWindowName as String] as? String ?? ""
-            return windowName.isEmpty || title.contains(windowName) || windowName.contains(fixtureTitle)
-        }?[kCGWindowNumber as String] as? CGWindowID
+            return !windowName.isEmpty
+                && (title.contains(windowName) || windowName.contains(fixtureTitle))
+        }) {
+            return exact[kCGWindowNumber as String] as? CGWindowID
+        }
+        guard ownedWindows.count == 1 else { return nil }
+        return ownedWindows[0][kCGWindowNumber as String] as? CGWindowID
     }
 }

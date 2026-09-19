@@ -367,7 +367,7 @@ enum ShellStatus: String {
         case .verifying: return "Jev Verifying"
         case .completed: return "Jev Completed"
         case .stopped: return "Jev Stopped"
-        case .blocked: return "Jev Permission Needed"
+        case .blocked: return "Jev Action Blocked"
         case .outcomeUnknown: return "Jev Outcome Unknown"
         case .failed: return "Jev Speech Failed"
         }
