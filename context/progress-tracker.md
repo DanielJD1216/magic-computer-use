@@ -8,8 +8,8 @@ Update this file after every meaningful change.
 - Authenticated Tailscale SSH to the target Mac is complete.
 - Full Xcode is installed and usable through `DEVELOPER_DIR`.
 - The pure SwiftPM safety core and minimal shell compile successfully.
-- The pure safety suite has 17 passing target-Mac tests.
-- Accessibility trust is not granted to the remote probe process, and no signing identities are installed.
+- The pure safety suite has 20 passing target-Mac tests.
+- Accessibility trust is not granted to the remote probe process or the stable app bundle; no developer signing identities are installed.
 - Native runtime feasibility gates remain open.
 
 ## Current Goal
@@ -30,26 +30,27 @@ Run native speech, hotkey, panel, and local Safari fixture probes without enabli
 - Chose Swift Package Manager for the pure core and shell because the repository had no existing app project or package.
 - Added capability, policy, session-authority, transcript, and bounded-selection logic.
 - Observed the intended red test failures, then made each TDD slice green on the target Mac.
-- Verified `swift test --disable-sandbox`: 17 tests, 0 failures.
 - Built `JevMacShell` successfully and completed a temporary unsigned process-launch smoke test.
-- Probed Speech for `en-CA`: available and on-device recognition supported.
+- Created the stable unsigned bundle at `~/Applications/JevMacShell-Prototype.app`; it is ready for the user-session Accessibility permission gate.
+- Added the deterministic fake Safari fixture adapter and exact verifier.
+- Verified `swift test --disable-sandbox`: 20 tests, 0 failures.
 - Cloned and synced the repository to the Mac at `~/Dev Life/active/Meet Jev, Fastest Computer Use`.
+- Probed Speech for `en-CA`: available and on-device recognition supported.
 - No Jev credential has been requested or used.
 
 ## In Progress
 
 - Native speech lifecycle, hotkey, panel focus, and Safari fixture probes.
-- Fake orchestrator, response transport parsing, redaction, budget, and fixture-adapter tests.
+- Fake orchestrator, response transport parsing, redaction, and budget tests.
 
 ## Next Up
 
-1. Create a stable local shell bundle and define the permission/signing path.
-2. Run the non-prompting Accessibility trust check and record the current permission boundary.
-3. Run isolated speech finalization/cancellation, on-device mode, hotkey, floating panel, Safari Accessibility, native fixture action, and exact verifier probes after a stable app bundle is available.
-4. Implement one trusted fixture operation and exact postcondition verifier.
-5. Complete fake orchestrator, response validation, redaction, and budget tests.
-6. Run the fixture acceptance matrix and egress canaries.
-7. Resolve Jev/TypeSafe private-use authorization, direct client versus relay, provider retention, and credential-entry path before live transport.
+1. Remove any old Jev shell entry from Accessibility and re-add the ad-hoc signed `~/Applications/JevMacShell-Prototype.app` with its toggle enabled.
+2. Run isolated speech finalization/cancellation, on-device mode, hotkey, floating panel, Safari Accessibility, native fixture action, and exact verifier probes after the permission gate is closed.
+3. Implement one trusted fixture operation and exact postcondition verifier.
+4. Complete fake orchestrator, response validation, redaction, and budget tests.
+5. Run the fixture acceptance matrix and egress canaries.
+6. Resolve Jev/TypeSafe private-use authorization, direct client versus relay, provider retention, and credential-entry path before live transport.
 
 ## Architecture Decisions
 
