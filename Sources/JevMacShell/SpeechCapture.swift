@@ -3,6 +3,14 @@ import Foundation
 import JevCore
 import Speech
 
+private final class SpeechRequestBox: @unchecked Sendable {
+    let request: SFSpeechAudioBufferRecognitionRequest
+
+    init(_ request: SFSpeechAudioBufferRecognitionRequest) {
+        self.request = request
+    }
+}
+
 @MainActor
 final class SpeechCapture {
     var onPhaseChange: ((SpeechCapturePhase) -> Void)?
@@ -118,6 +126,7 @@ final class SpeechCapture {
             request.requiresOnDeviceRecognition = true
         }
         recognitionRequest = request
+        let requestBox = SpeechRequestBox(request)
 
         recognitionTask = recognizer.recognitionTask(with: request) { @Sendable [weak self] result, error in
             let transcript = result?.bestTranscription.formattedString
@@ -151,7 +160,7 @@ final class SpeechCapture {
         let inputNode = audioEngine.inputNode
         let recordingFormat = inputNode.outputFormat(forBus: 0)
         inputNode.installTap(onBus: 0, bufferSize: 1_024, format: recordingFormat) { @Sendable buffer, _ in
-            request.append(buffer)
+            requestBox.request.append(buffer)
         }
 
         audioEngine.prepare()
