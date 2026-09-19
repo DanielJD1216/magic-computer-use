@@ -67,7 +67,7 @@ private final class HotKeyProbe {
         )
         print("HOTKEY_EVENT_HANDLER_STATUS=\(handlerStatus)")
 
-        var hotKeyID = EventHotKeyID(signature: OSType(0x4A455648), id: 1)
+        let hotKeyID = EventHotKeyID(signature: OSType(0x4A455648), id: 1)
         let registerStatus = RegisterEventHotKey(
             UInt32(kVK_ANSI_L),
             UInt32(cmdKey | optionKey),
@@ -214,8 +214,8 @@ private enum SafariFixtureProbe {
     }
 
     private static func children(of element: AXUIElement, attribute: String) -> [AXUIElement] {
-        guard let value = attributeValue(element, attribute) as? [Any] else { return [] }
-        return value.compactMap { $0 as? AXUIElement }
+        guard let value = attributeValue(element, attribute) as? [AXUIElement] else { return [] }
+        return value
     }
 
     private static func attributeValue(_ element: AXUIElement, _ attribute: String) -> Any? {
