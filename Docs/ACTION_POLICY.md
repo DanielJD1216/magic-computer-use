@@ -4,6 +4,10 @@
 
 Native code is the authority for capability, target, risk, confirmation, dispatch, and verification. Jev is a bounded selector, not an executor and not a policy engine.
 
+## Fast-subtask normalized actions
+
+`click`, `typeText`, and `wait` are normalized runtime actions, not capabilities by themselves. A trusted capability or backend adapter must still authorize the target, operation compatibility, input-key provenance, freshness binding, dispatch, settling, and independent verifier. A normalized action must never expand the closed registry or authorize an arbitrary current-Mac target.
+
 ## First-Slice Allowlist
 
 Only these operations may be selected or dispatched:

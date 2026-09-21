@@ -23,6 +23,18 @@
 | Transport mapping | `401`, `422`, `429`, `529`, timeout, cancellation, oversized/invalid response | Fixture |
 | Orchestrator | Fake speech, observation, selector, executor, verifier end to end | Fixture |
 
+## Fast Subtask Fixture Tests
+
+| Area | Required cases | Evidence |
+| --- | --- | --- |
+| Action space | Visible, enabled, operation-compatible targets only | Fixture |
+| Input materialization | Trusted input-key lookup; unknown keys and literal model values rejected | Fixture |
+| Freshness | Stale target recovery and stale retry limit | Fixture |
+| Progress guard | No-change blocking and action-budget termination | Fixture |
+| Verification | Independent completion verification before terminal success | Fixture |
+| Uncertain effect | Post-action observation failure becomes `outcome_unknown` without replay | Fixture |
+| Evidence | Redacted history and canary exclusion from serialized evidence | Fixture |
+
 ## First Safari Fixture Acceptance
 
 | Scenario | Expected result | Evidence |

@@ -7,14 +7,16 @@ Update this file after every meaningful change.
 - Corrected v0.1 contract and repository orientation are complete.
 - Authenticated Tailscale SSH to the target Mac is complete.
 - Full Xcode is installed and usable through `DEVELOPER_DIR`.
-- The pure SwiftPM safety core and minimal shell compile successfully.
-- The pure safety suite has 23 passing target-Mac tests.
-- The latest speech-enabled ad-hoc rebuild is not yet Accessibility-trusted; no developer signing identities are installed.
-- Native runtime feasibility gates remain open.
+- The pure Swift safety suite and integrated bounded fixture checks pass on the target Mac with 79 tests and 0 failures after the fast subtask runtime slices.
+- The target-Mac CuaDriver permissions and Hermes command preflight both return ready; no arbitrary task result has been independently verified after the earlier unknown outcome.
+- The local Safari fixture loop is complete; the live Jev selector is implemented and compile-verified on the target Mac.
+- The experimental desktop-mode UI is implemented and deployed as a separate, fail-closed surface; the live SSH-backed Hermes bridge and complete Hermes/CuaDriver preflight are green, while end-to-end task verification remains open.
+- The fast native route now handles explicit Notes launch and current-cursor text insertion without Hermes; generic desktop tasks remain on the slower Hermes fallback.
+- The panel lifecycle fix keeps the visible NSPanel available through the Accessibility tree after the app deactivates; target-Mac bounded and experimental states were read back successfully.
 
 ## Current Goal
 
-Run native speech, hotkey, panel, and local Safari fixture probes without enabling live Jev, then complete the fake orchestrator and fixture adapter loop.
+Validate one harmless, user-approved desktop task end-to-end and preserve an explicit `outcome_unknown` result when verification cannot be established.
 
 ## Completed
 
@@ -42,19 +44,37 @@ Run native speech, hotkey, panel, and local Safari fixture probes without enabli
 - Cloned and synced the repository to the Mac at `~/Dev Life/active/Meet Jev, Fastest Computer Use`.
 - Probed Speech for `en-CA`: available and on-device recognition supported; latest non-prompting status remains not determined until Hold to Speak is pressed.
 - No Jev credential has been requested or used.
+- Added a fixed-endpoint, Keychain-backed live Jev selector with minimized allowlisted state and strict Choice-response validation.
+- Added Mac UI controls for SecureField credential entry, Keychain storage, and explicit live-selection enablement.
+- Compile-verified the live selector build on the target Mac with `swift build --product JevMacShell --disable-sandbox`.
+- Added the `JevCore` Hermes controller contract, endpoint vocabulary, one-run lifecycle state machine, deterministic mock tests, and the SSH-backed Hermes/CuaDriver transport. Target-Mac `swift test --disable-sandbox` passes with 46 tests and 0 failures; no credential value was introduced.
+- Deployed the release `JevMacShell-Prototype.app` with the experimental voice controls, readiness refresh action, `⌘⌥L` shortcut, stop propagation, and redacted outcome handling. The deployed executable matches the release build and the app was restarted without stopping Hermes.
+- Diagnosed the reported no-op: the noninteractive WSL SSH environment omitted `/home/jinni_doo/.local/bin`, so the relay's bare `hermes` command exited 127 before Hermes started while Jev hid stderr.
+- Updated the relay to invoke the absolute Hermes launcher, include its directory in the child PATH, and include Hermes availability in preflight. The red/green shell regression passes, the nested Mac → WSL → Mac preflight returns `hermes_status: ready`, and the new release is deployed.
+- Diagnosed the second false-success path: the remote CuaDriver manifest advertised a macOS executable path that Hermes could not spawn from WSL. The Mac proxy now rewrites the MCP invocation to the local WSL proxy while preserving stdio forwarding to the Mac.
+- Added a structured `stream-json` relay result contract. A clean Hermes exit without a successful mutating `computer_use` action now becomes `outcome_unknown`; Jev no longer presents process exit status `0` as a verified task completion.
+- Added shell regressions for the proxy manifest, successful input-action evidence, and no-action false-success handling. All relay regressions pass; the target-Mac Swift suite passes with 46 tests and 0 failures.
+- Rebuilt, ad-hoc signed, deployed, and restarted the release bundle. The deployed binary contains the action-result gate, strict codesign verification passes, and the live Hermes/CuaDriver backend handshake and teardown are green.
+- Added the pure `FastDesktopTaskRouter` and target-Mac native `FastDesktopActionAdapter`. Explicit `open Notes` and `write/type [text] where my cursor is` requests bypass Hermes; incomplete cursor-writing transcripts stop for clarification instead of entering the slow fallback. Target-Mac tests now pass with 51 tests and 0 failures.
+- Rebuilt, ad-hoc signed, deployed, and relaunched the release bundle with the fast route. The deployed binary contains the fast-intent strings, strict codesign verification passes, and the app process is running.
+- Reproduced the `open notesapp` latency as a router miss: the unspaced phrase fell through to Hermes. Added spaced, plural, and unspaced Notes variants; target-Mac tests now pass with 52 tests and 0 failures, and the release was redeployed.
+- Added the bounded `FastSubtaskExecutor` value models, operation-specific action spaces, trusted input-key validation, backend/verifier seams, and deterministic Safari fixture adapter.
+- Added executor coverage for stale targets, no-change blocking, action budgets, cancellation, uncertain post-action observations, independent verification, and end-to-end fixture execution.
+- Added a local `FastDesktopExecutionEvidence` projection and lifecycle checkpoints; the target-Mac suite now passes with 79 tests and 0 failures, with canary values excluded from serialized evidence.
 
 ## In Progress
 
-- User-triggered native speech permission prompt and speech lifecycle, hotkey, panel focus, and Safari fixture probes.
-- Fake orchestrator, response transport parsing, redaction, and budget tests.
+- Keep the experimental voice/send controls fail-closed until the complete Hermes and CuaDriver preflight returns `ready`.
+- Preserve the transport evidence: Tailscale SSH identity, one active run, stop propagation, exit-status diagnostics, and uncertain outcomes become `outcome_unknown` without replay.
+- The remaining gate is one Daniel-approved harmless task with a visible postcondition; no task has been replayed automatically after the false-success reports.
+- Measure the fast route from speech release to CuaDriver confirmation; the read-only target CuaDriver call is currently 0.048 seconds, excluding speech capture.
+- Keep live dynamic Jev policy, OCR, Chrome DOM/CDP, and generic CuaDriver integration deferred. They require separate authorization, egress, target, and verification gates and are not part of this fixture runtime proof.
 
 ## Next Up
 
-1. Press Hold to Speak in the installed app and allow Speech Recognition followed by Microphone; then verify partial/final transcript and cancellation.
-2. Re-add the latest ad-hoc app bundle to Accessibility after no further rebuild, then complete physical hotkey press/release and floating-panel focus/restoration probes.
-3. Complete fake orchestrator, response validation, redaction, and budget tests.
-4. Run the fixture acceptance matrix and egress canaries.
-5. Resolve Jev/TypeSafe private-use authorization, direct client versus relay, provider retention, and credential-entry path before live transport.
+1. Run the complete target-Mac validation gate for the bounded fixture runtime.
+2. Preserve the explicit boundary: live dynamic Jev, OCR, Chrome DOM/CDP, and generic CuaDriver execution remain deferred.
+3. Keep generic desktop control, real-user data, and public claims out of scope.
 
 ## Architecture Decisions
 
@@ -66,7 +86,7 @@ Run native speech, hotkey, panel, and local Safari fixture probes without enabli
 - Final speech is required for the first Safari operation unless a reviewed harmless partial exception is separately implemented.
 - Every callback validates session and action-attempt identity.
 - Unknown native effect becomes `outcome_unknown`; no automatic replay.
-- Fixture adapter is the default. Live Jev remains disabled until authority and privacy gates close.
+- Fixture execution remains the default native path. Live Jev is an explicit selector mode and never receives execution authority.
 - Credentials are entered only through the approved Mac/Keychain path and never through chat.
 
 ## Open Questions
@@ -75,8 +95,10 @@ Run native speech, hotkey, panel, and local Safari fixture probes without enabli
 - Speech permission and actual on-device lifecycle behavior in the user session.
 - Global hotkey and utility panel behavior on the target OS.
 - Safari fixture hosting, accessibility identity, native action path, and verifier.
-- Applicable TypeSafe/Jev agreement and whether this private client architecture is authorized.
-- Direct client versus relay and provider retention/deletion/operational logging.
+- Account-specific TypeSafe authorization and direct-client conditions.
+- Provider retention/deletion/operational logging for Daniel's account.
+- Hermes controller transport: the app uses the authenticated Tailscale SSH identity and remote Hermes CLI; preflight now covers both the Hermes launcher and Mac CuaDriver before enabling send/voice controls.
+- CuaDriver 0.28.2 reports Accessibility and Screen Recording readiness; unrestricted-mode operation remains unclaimed until the correct daemon launch path is independently verified.
 
 ## Evidence Boundary
 

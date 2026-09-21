@@ -39,17 +39,17 @@ public enum FastDesktopVerificationID: String, Codable, CaseIterable, Sendable {
 }
 
 public enum FastDesktopRuntimeCheckpoint: String, Codable, CaseIterable, Hashable, Sendable {
-    case subtaskStarted
-    case observationCaptured
-    case actionSpaceBuilt
-    case policyDecisionStarted
-    case policyDecisionReceived
-    case freshnessChecked
-    case actionDispatched
-    case settleCompleted
-    case verificationStarted
-    case verificationCompleted
-    case subtaskTerminal
+    case subtaskStarted = "subtask_started"
+    case observationCaptured = "observation_captured"
+    case actionSpaceBuilt = "action_space_built"
+    case policyDecisionStarted = "policy_decision_started"
+    case policyDecisionReceived = "policy_decision_received"
+    case freshnessChecked = "freshness_checked"
+    case actionDispatched = "action_dispatched"
+    case settleCompleted = "settle_completed"
+    case verificationStarted = "verification_started"
+    case verificationCompleted = "verification_completed"
+    case subtaskTerminal = "subtask_terminal"
 }
 
 public enum FastDesktopSubtaskError: Error, Equatable, Sendable {

@@ -27,6 +27,24 @@ Measure the local Safari-fixture loop before making any performance statement. T
 - `outcome_unknown`
 - `session_failed`
 
+### Bounded fast subtask runtime
+
+The fixture-backed `FastSubtaskExecutor` emits these local, monotonic lifecycle checkpoints:
+
+- `subtask_started`
+- `observation_captured`
+- `action_space_built`
+- `policy_decision_started`
+- `policy_decision_received`
+- `freshness_checked`
+- `action_dispatched`
+- `settle_completed`
+- `verification_started`
+- `verification_completed`
+- `subtask_terminal`
+
+These markers carry no task text, literal input values, raw Accessibility values, screenshots, or provider responses. They are instrumentation for the bounded local runtime and do not imply live-provider or generic-desktop readiness.
+
 ## Stored Fields
 
 - Session, goal, request, observation, candidate-set, and action-attempt IDs.

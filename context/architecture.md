@@ -2,7 +2,7 @@
 
 ## Boundary
 
-The application is a native macOS menu-bar utility with a small command surface. The first proof slice is one local Safari fixture. It is intentionally not a generic computer-use agent.
+The application is a native macOS menu-bar utility with a small command surface. The first proof slice is one local Safari fixture. It is intentionally not a generic computer-use agent. The command panel now makes the native, bounded, and experimental desktop modes explicit; the experimental surface is a fail-closed preparation for a future Hermes controller bridge, not an execution path by itself.
 
 ```text
 Push-to-talk
@@ -13,7 +13,7 @@ Push-to-talk
   -> Local capability registry
   -> Selection adapter
   -> Policy engine
-  -> Native executor
+  -> Executor selector: native Swift or bounded CuaDriver fixture route
   -> Fixture verifier
   -> UI state and redacted evidence
 ```
@@ -28,8 +28,12 @@ Push-to-talk
 - `CapabilityRegistry`: creates the exact reviewed candidates in `Docs/CAPABILITY_REGISTRY.md`.
 - `SelectionAdapter`: fixture adapter first; live Jev only after authorization and egress gates.
 - `PolicyEngine`: revalidates transcript phase, target, provenance, permission, freshness, risk, confirmation, policy version, deadline, and binding identities.
+- `FastSubtaskExecutor`: runs a trusted, bounded multi-step subtask beneath the closed capability and policy layers. It builds operation-specific action spaces, materializes only trusted input keys, checks freshness before dispatch, settles after mutation, enforces budgets and cancellation, and requires independent verification. It cannot create capabilities or authorize arbitrary current-Mac actions.
 - `NativeExecutor`: maps a validated capability ID to one trusted adapter operation. No arbitrary parameters or executable model output enter this layer.
-- `FixtureVerifier`: checks the exact action-specific postcondition independently of the executor.
+- `ComputerUseExecutor`: default-off CuaDriver bridge for the reviewed-fixture capability and the app-owned TextEdit workspace probe. Each route receives a native target contract, requires a fresh Accessibility element, and returns to an independent verifier. It is not a generic desktop command surface.
+- `ExperimentalDesktopSurface`: explicit current-Mac mode, warning, task composer, controller status, stop/reset controls, and redacted activity history. It does not grant execution authority; the Hermes send action stays disabled until the controller bridge is verified.
+- `HermesControllerBridge`: `JevCore` protocol and lifecycle contract for authenticated Hermes capabilities, one active run, status/events, stop, and fail-closed `outcome_unknown` handling. The current build includes no live transport implementation.
+- `FixtureVerifier`: checks the exact action-specific postcondition independently.
 - `EvidenceLogger`: records only the allowlisted redacted fields in `Docs/DATA_EGRESS.md`.
 
 ## State Model
@@ -79,7 +83,7 @@ No model, page, fixture, transcript, or Accessibility tree can create a new capa
 
 ## Transport Boundary
 
-The live adapter is disabled by default. The fixture adapter is the development default. If live Jev is later authorized, it receives minimized allowlisted state only. It never receives raw audio, screenshots, full Accessibility trees, clipboard contents, credentials, shell text, arbitrary URLs, or full session history.
+The live adapter is disabled by default and can be enabled only through the Mac settings UI after a Keychain credential is present. The bounded CuaDriver executor is separately disabled by default and can be enabled only through the Mac settings UI. Its Safari route is limited to `safari-fixture-v1` and `select_reviewed_fixture_view`; its workspace route is limited to a unique file below the app-owned Application Support directory and a fixed TextEdit probe. Fresh Accessibility snapshots supply element tokens, while native Swift retains target binding, action policy, and postcondition verification. The experimental desktop surface is a separate current-Mac UI state. Its `JevCore` Hermes bridge contract is present, but no authenticated Hermes controller endpoint or live transport is configured in this build; it must not be treated as a generic executor or as proof that the external daemon is ready. Live Jev receives minimized allowlisted state only. It never receives raw audio, screenshots, full Accessibility trees, clipboard contents, credentials, shell text, arbitrary URLs, or full session history.
 
 ## Permission Boundary
 
