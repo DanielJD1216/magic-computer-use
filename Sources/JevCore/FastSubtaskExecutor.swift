@@ -28,29 +28,33 @@ public struct FastSubtaskExecutor: Sendable {
     private let verifier: any FastDesktopVerifier
     private let configuration: FastDesktopRuntimeConfiguration
     private let cancellation: @Sendable () -> Bool
+    private let checkpoint: @Sendable (FastDesktopRuntimeCheckpoint) -> Void
 
     public init(
         backend: any FastDesktopBackend,
         policy: any FastDesktopDecisionPolicy,
         verifier: any FastDesktopVerifier,
         configuration: FastDesktopRuntimeConfiguration = FastDesktopRuntimeConfiguration(),
-        cancellation: @escaping @Sendable () -> Bool = { Task.isCancelled }
+        cancellation: @escaping @Sendable () -> Bool = { Task.isCancelled },
+        checkpoint: @escaping @Sendable (FastDesktopRuntimeCheckpoint) -> Void = { _ in }
     ) {
         self.backend = backend
         self.policy = policy
         self.verifier = verifier
         self.configuration = configuration
         self.cancellation = cancellation
+        self.checkpoint = checkpoint
     }
 
     public func execute(subtask: FastDesktopSubtask) async -> FastDesktopExecutionResult {
+        checkpoint(.subtaskStarted)
         var snapshot = FastDesktopSnapshot.empty
         var history: [FastDesktopActionRecord] = []
         var staleRetries = 0
         var noChangeCount = 0
 
         if cancellation() {
-            return result(
+            return terminalResult(
                 status: .stopped,
                 snapshot: snapshot,
                 history: history,
@@ -60,8 +64,9 @@ public struct FastSubtaskExecutor: Sendable {
 
         do {
             snapshot = try await backend.observe()
+            checkpoint(.observationCaptured)
         } catch {
-            return result(
+            return terminalResult(
                 status: .needsAgent,
                 snapshot: snapshot,
                 history: history,
@@ -71,7 +76,7 @@ public struct FastSubtaskExecutor: Sendable {
 
         while history.count < subtask.maxActions {
             if cancellation() {
-                return result(
+                return terminalResult(
                     status: .stopped,
                     snapshot: snapshot,
                     history: history,
@@ -80,16 +85,19 @@ public struct FastSubtaskExecutor: Sendable {
             }
 
             _ = FastDesktopActionSpaceBuilder.build(snapshot: snapshot, subtask: subtask)
+            checkpoint(.actionSpaceBuilt)
 
             let decision: FastDesktopDecision
             do {
+                checkpoint(.policyDecisionStarted)
                 decision = try await policy.decide(
                     subtask: subtask,
                     snapshot: snapshot,
                     history: history
                 )
+                checkpoint(.policyDecisionReceived)
             } catch {
-                return result(
+                return terminalResult(
                     status: .needsAgent,
                     snapshot: snapshot,
                     history: history,
@@ -99,27 +107,29 @@ public struct FastSubtaskExecutor: Sendable {
 
             switch decision.operation {
             case .subtaskComplete:
+                checkpoint(.verificationStarted)
                 let verification = await verifier.verify(
                     verification: subtask.verification,
                     snapshot: snapshot
                 )
+                checkpoint(.verificationCompleted)
                 switch verification {
                 case .satisfied:
-                    return result(
+                    return terminalResult(
                         status: .subtaskComplete,
                         snapshot: snapshot,
                         history: history,
                         reasonCode: nil
                     )
                 case .notSatisfied:
-                    return result(
+                    return terminalResult(
                         status: .needsAgent,
                         snapshot: snapshot,
                         history: history,
                         reasonCode: "verification_failed"
                     )
                 case .unavailable:
-                    return result(
+                    return terminalResult(
                         status: .needsAgent,
                         snapshot: snapshot,
                         history: history,
@@ -127,28 +137,28 @@ public struct FastSubtaskExecutor: Sendable {
                     )
                 }
             case .blocked:
-                return result(
+                return terminalResult(
                     status: .blocked,
                     snapshot: snapshot,
                     history: history,
                     reasonCode: "policy_blocked"
                 )
             case .needsAgent:
-                return result(
+                return terminalResult(
                     status: .needsAgent,
                     snapshot: snapshot,
                     history: history,
                     reasonCode: "policy_requested_agent"
                 )
             case .stopped:
-                return result(
+                return terminalResult(
                     status: .stopped,
                     snapshot: snapshot,
                     history: history,
                     reasonCode: "session_stopped"
                 )
             case .outcomeUnknown:
-                return result(
+                return terminalResult(
                     status: .outcomeUnknown,
                     snapshot: snapshot,
                     history: history,
@@ -166,7 +176,7 @@ public struct FastSubtaskExecutor: Sendable {
                     subtask: subtask
                 )
             } catch {
-                return result(
+                return terminalResult(
                     status: .needsAgent,
                     snapshot: snapshot,
                     history: history,
@@ -177,8 +187,9 @@ public struct FastSubtaskExecutor: Sendable {
             let isFresh: Bool
             do {
                 isFresh = try await backend.isFresh(snapshot: snapshot, action: action)
+                checkpoint(.freshnessChecked)
             } catch {
-                return result(
+                return terminalResult(
                     status: .needsAgent,
                     snapshot: snapshot,
                     history: history,
@@ -189,7 +200,7 @@ public struct FastSubtaskExecutor: Sendable {
             guard isFresh else {
                 staleRetries += 1
                 if staleRetries > configuration.staleRetryLimit {
-                    return result(
+                    return terminalResult(
                         status: .needsAgent,
                         snapshot: snapshot,
                         history: history,
@@ -199,7 +210,7 @@ public struct FastSubtaskExecutor: Sendable {
                 do {
                     snapshot = try await backend.observe()
                 } catch {
-                    return result(
+                    return terminalResult(
                         status: .needsAgent,
                         snapshot: snapshot,
                         history: history,
@@ -210,7 +221,7 @@ public struct FastSubtaskExecutor: Sendable {
             }
 
             if cancellation() {
-                return result(
+                return terminalResult(
                     status: .stopped,
                     snapshot: snapshot,
                     history: history,
@@ -219,9 +230,10 @@ public struct FastSubtaskExecutor: Sendable {
             }
 
             do {
+                checkpoint(.actionDispatched)
                 try await backend.execute(action: action, against: snapshot)
             } catch {
-                return result(
+                return terminalResult(
                     status: .outcomeUnknown,
                     snapshot: snapshot,
                     history: history,
@@ -231,7 +243,7 @@ public struct FastSubtaskExecutor: Sendable {
             staleRetries = 0
 
             if cancellation() {
-                return result(
+                return terminalResult(
                     status: .outcomeUnknown,
                     snapshot: snapshot,
                     history: history,
@@ -242,8 +254,9 @@ public struct FastSubtaskExecutor: Sendable {
             let settledSnapshot: FastDesktopSnapshot
             do {
                 settledSnapshot = try await settle()
+                checkpoint(.settleCompleted)
             } catch {
-                return result(
+                return terminalResult(
                     status: .outcomeUnknown,
                     snapshot: snapshot,
                     history: history,
@@ -268,7 +281,7 @@ public struct FastSubtaskExecutor: Sendable {
             } else {
                 noChangeCount += 1
                 if noChangeCount >= configuration.noChangeLimit {
-                    return result(
+                    return terminalResult(
                         status: .blocked,
                         snapshot: snapshot,
                         history: history,
@@ -278,7 +291,7 @@ public struct FastSubtaskExecutor: Sendable {
             }
         }
 
-        return result(
+        return terminalResult(
             status: .needsAgent,
             snapshot: snapshot,
             history: history,
@@ -288,6 +301,7 @@ public struct FastSubtaskExecutor: Sendable {
 
     private func settle() async throws -> FastDesktopSnapshot {
         var snapshot = try await backend.observe()
+        checkpoint(.observationCaptured)
         guard configuration.stableObservationCount > 1 else {
             return snapshot
         }
@@ -308,6 +322,7 @@ public struct FastSubtaskExecutor: Sendable {
                 try? await Task.sleep(nanoseconds: configuration.pollNanoseconds)
             }
             let nextSnapshot = try await backend.observe()
+            checkpoint(.observationCaptured)
             if nextSnapshot.structuralSignature == previousSignature {
                 stableCount += 1
             } else {
@@ -331,6 +346,21 @@ public struct FastSubtaskExecutor: Sendable {
         FastDesktopExecutionResult(
             status: status,
             finalSnapshot: snapshot,
+            history: history,
+            reasonCode: reasonCode
+        )
+    }
+
+    private func terminalResult(
+        status: FastDesktopTerminal,
+        snapshot: FastDesktopSnapshot,
+        history: [FastDesktopActionRecord],
+        reasonCode: String?
+    ) -> FastDesktopExecutionResult {
+        checkpoint(.subtaskTerminal)
+        return result(
+            status: status,
+            snapshot: snapshot,
             history: history,
             reasonCode: reasonCode
         )

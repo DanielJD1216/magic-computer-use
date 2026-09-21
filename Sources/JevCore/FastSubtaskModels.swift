@@ -38,6 +38,20 @@ public enum FastDesktopVerificationID: String, Codable, CaseIterable, Sendable {
     case reviewedFixture
 }
 
+public enum FastDesktopRuntimeCheckpoint: String, Codable, CaseIterable, Hashable, Sendable {
+    case subtaskStarted
+    case observationCaptured
+    case actionSpaceBuilt
+    case policyDecisionStarted
+    case policyDecisionReceived
+    case freshnessChecked
+    case actionDispatched
+    case settleCompleted
+    case verificationStarted
+    case verificationCompleted
+    case subtaskTerminal
+}
+
 public enum FastDesktopSubtaskError: Error, Equatable, Sendable {
     case emptyGoal
     case invalidActionBudget
@@ -188,7 +202,7 @@ public struct FastDesktopAction: Equatable, Sendable {
     }
 }
 
-public struct FastDesktopActionRecord: Equatable, Sendable {
+public struct FastDesktopActionRecord: Codable, Equatable, Sendable {
     public let step: Int
     public let kind: FastDesktopActionKind
     public let targetID: String?
@@ -230,6 +244,30 @@ public struct FastDesktopExecutionResult: Equatable, Sendable {
     ) {
         self.status = status
         self.finalSnapshot = finalSnapshot
+        self.history = history
+        self.reasonCode = reasonCode
+    }
+
+    public var redactedEvidence: FastDesktopExecutionEvidence {
+        FastDesktopExecutionEvidence(
+            status: status,
+            history: history,
+            reasonCode: reasonCode
+        )
+    }
+}
+
+public struct FastDesktopExecutionEvidence: Codable, Equatable, Sendable {
+    public let status: FastDesktopTerminal
+    public let history: [FastDesktopActionRecord]
+    public let reasonCode: String?
+
+    public init(
+        status: FastDesktopTerminal,
+        history: [FastDesktopActionRecord],
+        reasonCode: String?
+    ) {
+        self.status = status
         self.history = history
         self.reasonCode = reasonCode
     }
