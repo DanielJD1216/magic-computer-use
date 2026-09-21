@@ -2,15 +2,103 @@
 
 ## Status
 
-**BLOCKED BY PROVIDER RESPONSE. Do not retry or treat live TypeSafe transport as ready.**
+**GATE 2 CONDITIONALLY APPROVED FOR THE CURRENT BOUNDED PAYLOAD. BROADER DATA SCOPE REMAINS CLOSED.**
 
-Last checked: `2026-09-20T19:13:53-07:00`.
+Last checked: `2026-09-21T02:05:37-07:00`.
 
-The decision under review is whether JevMacShell may make live TypeSafe requests for a minimized, synthetic Safari-fixture policy state. This is an operational and product authorization review, not legal advice. One explicitly authorized synthetic request was made and failed closed; no credential value was requested, displayed, or used in chat.
+The decision under review is whether JevMacShell may make live TypeSafe requests for a minimized, synthetic Safari-fixture policy state. This is an operational and product authorization review, not legal advice. One malformed harness probe and three later SSH harness probes were made; the SSH probes failed to export the Keychain value and their 403 outputs are invalid direct-API evidence. One separately authorized native GUI-app probe then used the app-owned Keychain and URLSession path and received a valid closed-choice selection. No credential value was requested, displayed, or used in chat.
+
+## Accelerated disposition
+
+This Gate 2 review is intentionally split into evidence that code and public
+documentation can close, and owner decisions that they cannot:
+
+### Closed by evidence
+
+- The official API contract and `jev-latest` alias were rechecked on
+  `2026-09-21`; the documented endpoint is the TypeSafe System One HTTP API
+  with bearer authentication and typed questions.[5]
+- The native app transport is technically proven with a minimized synthetic
+  fixture request. The earlier SSH `403` results remain invalid because the
+  SSH Keychain value read failed with exit `36`.
+- The local payload boundary is implemented as fixed workflow and fixture
+  metadata, closed capability IDs and descriptions, and a bounded final
+  command fragment. It excludes screenshots, audio, Accessibility trees,
+  credentials, URLs, documents, and customer content.[6] The command fragment
+  is screened for known secret and URL canaries but is not a general privacy
+  classifier.
+- The deployed bounded Accessibility routes are technically verified without
+  another provider request. This does not expand the provider authorization.
+
+### Closed by owner confirmation
+
+- Daniel confirmed that the signed-in account, company TypeSafe contract or
+  Order, DOO MADE approval, automatic-refill setting, and applicable
+  retention/data-processing conditions were checked and verified.
+- This is owner confirmation recorded from chat, not an independent legal or
+  account audit. It is sufficient to proceed with the current bounded private
+  prototype posture, not to make a production, public-service, or broader-data
+  authorization claim.
+
+The fast path is complete. No additional provider request, Mac deployment, or
+Accessibility cycle is needed to close this review for the current bounded
+payload.
+
+## Owner-stated posture
+
+On `2026-09-21`, Daniel stated the following intended posture in plain
+English:
+
+- DOO MADE is the approving entity for this use.
+- A company TypeSafe contract or Order should govern the account.
+- Direct TypeSafe API calls from the Mac app are acceptable in principle.
+- TypeSafe usage may continue against the existing account balance, with
+  automatic refill off. Daniel stated that the balance is about `$5`; if more
+  usage is needed, he will fund it manually. No payment details are recorded.
+- Daniel stated that non-secret information may leave the Mac. This is an
+  owner-level intent, not permission for the implementation to bypass its
+  current bounded payload allowlist.
+- Daniel subsequently confirmed that the account, contract or Order,
+  DOO MADE approval, refill setting, and applicable retention/data-processing
+  conditions were verified.
+
+The implementation keeps two safeguards in force:
+
+- Automatic refill remains disabled. The stated `$5` balance is not an
+  independently verified billing or pricing record.
+- The live adapter remains limited to its existing bounded request shape. Any
+  broader payload requires a field-by-field data-egress review and a code
+  change; it is not enabled by the owner statement alone. In particular,
+  transcripts, screenshots, Accessibility trees, documents, customer content,
+  credentials, URLs, and secrets remain prohibited by the current build.
+
+## Actual outbound fields in the current build
+
+The current `LiveJevSelectionAdapter` request is bounded, but its boundary is
+more precise than the phrase “all non-secret information.” The request can
+contain:
+
+- fixed workflow and model identifiers;
+- request, candidate-set, session-generation, and action-attempt identifiers;
+- `transcriptPhase = final`;
+- a trimmed `commandFragment` from the final recognized command, limited to
+  240 characters and rejected when it contains the current secret, token, or
+  URL canaries;
+- fixture version and current fixture view;
+- locally generated candidate IDs and descriptions; and
+- the closed Choice question instructions and criteria for those candidates.
+
+The response is parsed locally for model, one selected capability, the exact
+probability set, and confidence. Raw provider bodies are not retained or
+logged by the client. The command-fragment screen is not a general-purpose
+privacy classifier. Therefore the owner statement allowing non-secret data
+does not authorize arbitrary user text, personal data, or customer content to
+be sent. A broader boundary requires an explicit field-by-field review and a
+code change.
 
 ## Direct verdict
 
-The public sources confirm the API shape and describe more than one possible commercial or preview agreement, but they do not establish which agreement governs Daniel's account, whether the intended DOO MADE prototype use is permitted under that agreement, whether credits or paid usage apply, or whether direct client calls are authorized.[1][3][5] Keep live transport disabled until those account-specific facts are confirmed.
+The public sources confirm the API shape and current Jev model aliases. The signed-in console can run Jev, and the native JevMacShell path can also run the bounded direct API request: it returned `select_reviewed_fixture_view` through `LiveJevSelectionAdapter`. The earlier HTTP `403` outputs came from an SSH harness that ignored `security -w` exit `36` and could send an empty Bearer value; they do not establish provider denial. The technical transport issue is resolved. The target Mac's deployed user app is configured for live selection by explicit instruction, while the independent authorization, egress, and account-agreement gates remain open.[1][3][5] After the deployed bundle received Accessibility approval, the bounded Safari and Jev-owned TextEdit routes were exercised without sending another provider request.
 
 ## Confirmed public evidence
 
@@ -48,31 +136,35 @@ The public DPA describes a controller/processor relationship, documented instruc
 
 | Gate item | Status | Evidence or blocker |
 | --- | --- | --- |
-| Applicable account agreement | **Unknown** | The public preview terms and entity Master Customer Agreement have materially different scopes.[1][3] Account-specific agreement and Order are not available in the repository.[unverified] |
-| Authority to accept/use the applicable agreement | **Unknown** | No account owner or organizational authorization has been recorded for this integration.[unverified] |
-| Intended use is permitted | **Unknown** | The preview terms restrict third-party/service use and preview evaluation.[1] The intended DOO MADE prototype relationship to those restrictions requires an account-specific decision. |
-| Direct API call versus relay | **Unknown** | Public API docs show an API-key request, but do not decide whether this account permits a direct client, relay, or both.[5] |
-| Payload data classification | **Conditionally bounded** | The implementation can send only a minimized synthetic fixture state.[6] This reduces exposure but does not eliminate provider processing, retention, telemetry, or transfer.[2][3] |
-| Retention, deletion, telemetry, and subprocessors | **Insufficient for enablement** | Public policies describe broad retention or telemetry handling.[2][3] The account-specific terms and applicable DPA are not confirmed.[4][unverified] |
-| Credits, rate limits, and material cost | **Unknown** | The entity agreement describes credits,[3] but the active account balance, pricing, refill behavior, and agreement are unknown.[unverified] |
-| Credential path | **Locally designed, not authorized** | The intended storage boundary is macOS Keychain only.[unverified] No credential should be entered until the provider and account gates close. |
-| Live synthetic smoke test | **Blocked after provider 403** | Requires provider clarification and a new explicit approval before any retry.[unverified] |
+| Applicable account agreement | **Owner-verified, not independently audited** | Daniel confirmed that the signed-in account and company TypeSafe contract or Order were checked. The agent did not inspect account credentials or reproduce the private agreement.[1][3] |
+| Authority to accept/use the applicable agreement | **Owner-verified, not independently audited** | Daniel confirmed the DOO MADE approval posture. The agent did not inspect a private authorization artifact. |
+| Intended use is permitted | **Conditionally approved for current private prototype** | Daniel confirmed the account and applicable conditions. This does not authorize production, public service, or broader data use.[1] |
+| Direct API call versus relay | **Owner-verified: direct API** | Daniel confirmed the direct Mac-to-TypeSafe posture for this bounded prototype.[5] |
+| Payload data classification | **Conditionally bounded** | The implementation sends the fixed request fields listed above, including a bounded final command fragment. This reduces exposure but does not eliminate provider processing, retention, telemetry, or transfer.[2][3][6] |
+| Retention, deletion, telemetry, and subprocessors | **Owner-verified for current prototype, not independently audited** | Daniel confirmed the applicable retention/data-processing conditions were checked. The public sources still describe provider processing and U.S. hosting.[2][3][4] |
+| Credits, rate limits, and material cost | **Conditionally owner-approved** | Daniel confirmed automatic refill is off, stated that the account has about `$5` available, and will add funds manually if needed. The agent did not inspect the billing view.[3] |
+| Credential path | **Native GUI path works; SSH export fails** | The GUI app's `JevCredentialStore.hasCredential()` reports a stored item, and the native GUI probe used the app-owned Keychain read successfully. SSH `security -w` returns exit `36` with an empty value and must not be used to drive a provider request. |
+| Live synthetic smoke test | **Native selection passed; bounded Accessibility routes verified** | The native GUI probe returned `select_reviewed_fixture_view` through `LiveJevSelectionAdapter` and native `URLSession`. Deployment set the target user's `jev.liveSelection.enabled` preference to `1`. After Accessibility approval, both reversible bounded Safari fixture transitions and the Jev-owned TextEdit workspace route were verified locally. No additional provider request was made during the Accessibility verification. |
 
-## Required owner decisions
+## Conditions of approval
 
-1. Identify the agreement that governs the TypeSafe account used for this prototype: preview Terms of Service, an entity Master Customer Agreement and Order, or another account-specific document.
-2. Confirm that the intended use is Daniel's private synthetic-fixture evaluation and state whether it is allowed to support a DOO MADE-owned prototype. Do not assume that a private UI makes it acceptable under the preview restrictions.[1]
-3. Choose direct API transport or an approved relay. The implementation should not infer this from the existence of a public endpoint.[5]
-4. Confirm whether consuming credits or triggering any paid or auto-refill behavior is authorized.[3] One live call was explicitly authorized and returned HTTP 403; no further paid or live call is included until the provider response is explained.
-5. Confirm the permitted data boundary. The recommended first probe remains synthetic Safari-fixture state only, with no raw transcripts, personal data, screenshots, Accessibility values, credentials, URLs, or customer content.[2][4][6]
+1. Use direct API transport only for the current bounded private prototype and
+   only through the approved Mac/Keychain path.[5]
+2. Keep automatic refill off. Any additional funding remains a manual owner
+   action; no payment details are stored in this repository or chat.
+3. Keep the implementation's current bounded payload allowlist and the fields
+   listed above. If the owner wants broader non-secret data sent, perform a
+   separate field-by-field data-egress review before changing code.[2][4][6]
+4. Keep production release, public service, customer content, and unrestricted
+   desktop automation outside this approval.
 
 ## Recommended next action
 
-Keep the code and UI default-off. The next physical action is to inspect the TypeSafe account's governing agreement, credit status, and account-specific data handling, or obtain written confirmation from TypeSafe. Do not paste an API key into chat or the repository. Once those facts are available, a separate approval can authorize or reject a target-Mac synthetic smoke test.
+The native app path proves that the Keychain credential, direct API transport, current model alias, and bounded request work together. The earlier SSH 403 values were invalid because the harness sent an empty or unverified Bearer value. The target Mac is enabled for live selection by explicit instruction, and the deployed bundle now has verified Accessibility approval for the bounded routes. Daniel then confirmed the account, company contract or Order, DOO MADE approval, refill setting, and applicable retention/data-processing conditions. Gate 2 is therefore conditionally approved for the current bounded private prototype. Do not use SSH secret export for future tests, and do not widen the payload without a separate review.
 
 ## Live smoke outcome
 
-One explicitly authorized synthetic request was sent from the configured target Mac after the local test and build gates passed. It returned HTTP `403` with a provider error body whose only retained field was `detail`; the response body was not retained. No selection or local action resulted, and no retry was made. Full sanitized evidence is recorded in `Docs/TYPESAFE_LIVE_SMOKE_RESULT.md`.
+The first probe used a malformed Authorization header and returned 403, so it is invalid evidence. Three later SSH probes attempted to use the target Mac's Keychain, but `security -w` returned exit `36` with an empty value; the harness failed to check that condition and could send an empty Bearer value. Their 403 outputs are therefore invalid for account diagnosis. Separately, the signed-in console Playground evaluated a default synthetic Noul request successfully with `jev-latest`, and the native JevMacShell probe evaluated the bounded Safari-fixture Choice request successfully with `select_reviewed_fixture_view`. No local capability action resulted. Full sanitized evidence is recorded in `Docs/TYPESAFE_LIVE_SMOKE_RESULT.md`.
 
 ## Sources
 

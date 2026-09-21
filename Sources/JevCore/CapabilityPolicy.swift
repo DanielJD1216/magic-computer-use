@@ -3,6 +3,7 @@ import Foundation
 public enum CapabilityID: String, CaseIterable, Codable, Sendable {
     case activatePreflightedSafariFixture = "activate_preflighted_safari_fixture"
     case selectReviewedFixtureView = "select_reviewed_fixture_view"
+    case returnToLandingFixtureView = "return_to_landing_fixture_view"
     case waitForReviewedFixtureState = "wait_for_reviewed_fixture_state"
     case stop
     case askUser = "ask_user"
@@ -91,6 +92,16 @@ public enum CapabilityRegistry {
             CapabilityCandidate(
                 id: .selectReviewedFixtureView,
                 description: "Select a reviewed view in the local Safari fixture",
+                target: target,
+                transcriptRequirement: .final,
+                payloadProvenance: .declaredFixture,
+                confirmationRequirement: .none,
+                expiresAt: expiry,
+                policyVersion: "safari-fixture-v1"
+            ),
+            CapabilityCandidate(
+                id: .returnToLandingFixtureView,
+                description: "Return the local Safari fixture to its landing view",
                 target: target,
                 transcriptRequirement: .final,
                 payloadProvenance: .declaredFixture,

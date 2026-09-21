@@ -36,6 +36,18 @@ final class FastSubtaskCapabilityRouteTests: XCTestCase {
         XCTAssertEqual(dispatchCount, 1)
     }
 
+    func testLandingCapabilityUsesLandingVerification() throws {
+        let candidate = try XCTUnwrap(
+            CapabilityRegistry.firstSliceCandidates(target: target)
+                .first(where: { $0.id == .returnToLandingFixtureView })
+        )
+
+        let subtask = try FastSubtaskCapabilityRoute.subtask(for: candidate)
+
+        XCTAssertEqual(subtask.verification, .landingFixture)
+        XCTAssertTrue(subtask.constraints.contains("Dispatch at most one landing-fixture click"))
+    }
+
     func testOtherCapabilitiesCannotCreateTheReviewedSubtask() throws {
         let candidate = try XCTUnwrap(
             CapabilityRegistry.firstSliceCandidates(target: target)

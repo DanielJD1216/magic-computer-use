@@ -10,7 +10,7 @@ Request only the capability needed by the current user intent. Explain scope and
 
 1. **Microphone:** when push-to-talk capture starts or speech setup is explicitly enabled.
 2. **Speech recognition:** only for the selected transcription adapter.
-3. **Accessibility:** only when the reviewed Safari observation or execution path requires it.
+3. **Accessibility:** only when the bounded Safari fixture observation/execution path, including its reversible landing transition, or the Jev-owned disposable workspace path requires it.
 4. **Automation:** not part of the first slice; only consider it for a specific later workflow that cannot use a safer path.
 
 ## UI Requirements
@@ -21,9 +21,16 @@ Show the permission name, current status, capability requiring it, why it is nee
 
 Speech mode is unresolved until target-Mac probes. Prefer on-device recognition if supported. Never silently switch to remote speech recognition. Any remote speech path requires explicit consent, allowlisted fields, provider handling, and agreement clearance. Live Jev remains disabled while these are unresolved.
 
-## Safari Fixture
+## Bounded computer-use routes
 
-Accessibility values are minimized. Do not request Accessibility merely to render the menu-bar or command panel. The app cannot dispatch a fixture operation if Accessibility is missing, withdrawn, stale, or not verifiable.
+Accessibility values are minimized. Do not request Accessibility merely to render the menu-bar or command panel. The app cannot dispatch a bounded operation if Accessibility is missing, withdrawn, stale, or not verifiable.
+
+The approved bounded routes are:
+
+- the versioned local Safari fixture, bound to its verified process/window identity and fixed reviewed/landing controls;
+- no TextEdit or other workspace target; that expansion is deferred until descriptor-bound file handoff and document identity are independently verified.
+
+The deferred workspace route is not exposed to Jev, does not grant access to personal documents, and does not accept arbitrary app targets, coordinates, selectors, or free-form text.
 
 ## Test Matrix
 
@@ -31,7 +38,7 @@ Accessibility values are minimized. Do not request Accessibility merely to rende
 | --- | --- | --- | --- |
 | Microphone | Capture begins | Capture does not begin | Explain and remain safe |
 | Speech recognition | Partial/final events | No transcript | Explain adapter limitation or use a fake test |
-| Accessibility | Reviewed fixture path works | No fixture action | Block and explain |
+| Accessibility | Exact local Safari fixture transition works | No bounded action | Block and explain |
 | Automation | Not required in v0.1 | N/A | Do not request |
 
 ## Open Mac Checks

@@ -7,17 +7,18 @@ Update this file after every meaningful change.
 - Corrected v0.1 contract and repository orientation are complete.
 - Authenticated Tailscale SSH to the target Mac is complete.
 - Full Xcode is installed and usable through `DEVELOPER_DIR`.
-- The pure Swift safety suite and integrated bounded fixture checks pass on the target Mac with 81 tests and 0 failures after the fast subtask runtime slices.
+- The prior target-Mac baseline after the reversible Safari Accessibility slice was 92 tests and 0 failures; the latest Swift changes still require secure target-Mac validation.
 - The fixture-backed TypeSafe Choice client now has provider-shaped request/response models and six focused target-Mac tests; no live provider request or credential was used.
 - The target-Mac CuaDriver permissions and Hermes command preflight both return ready; no arbitrary task result has been independently verified after the earlier unknown outcome.
 - The local Safari fixture loop is complete; the live Jev selector is implemented and compile-verified on the target Mac.
-- The experimental desktop-mode UI is implemented and deployed as a separate, fail-closed surface; the live SSH-backed Hermes bridge and complete Hermes/CuaDriver preflight are green, while end-to-end task verification remains open.
-- The fast native route now handles explicit Notes launch and current-cursor text insertion without Hermes; generic desktop tasks remain on the slower Hermes fallback.
+- The experimental desktop-mode UI is retained as a visibly deferred, fail-closed surface; no Hermes task submission or arbitrary desktop route is reachable in the current checkpoint.
+- The former fast Notes and current-cursor routes are intentionally deferred until exact target binding and independent postcondition verification exist.
 - The panel lifecycle fix keeps the visible NSPanel available through the Accessibility tree after the app deactivates; target-Mac bounded and experimental states were read back successfully.
+- The current bounded Accessibility scope retains the Safari fixture's reviewed and landing transitions. The TextEdit workspace expansion is deferred until descriptor-bound file handoff and exact document identity are independently verified.
 
 ## Current Goal
 
-Validate the provider-shaped TypeSafe Choice boundary with fixture transport while keeping Gate 2 authorization and live network access closed.
+- Expand Accessibility only through separately bounded targets, exact postconditions, and independent readback while keeping generic desktop control closed.
 
 ## Completed
 
@@ -64,21 +65,26 @@ Validate the provider-shaped TypeSafe Choice boundary with fixture transport whi
 - Added a local `FastDesktopExecutionEvidence` projection and lifecycle checkpoints; the target-Mac suite now passes with 81 tests and 0 failures, with canary values excluded from serialized evidence.
 - Wired the native `select_reviewed_fixture_view` capability through the bounded `FastSubtaskExecutor`, a Mac Safari observation/action adapter, independent readback verification, and cancellation propagation. The CuaDriver bounded route remains separate.
 - Daniel verified the deployed UI path after restoring Accessibility permission and selecting Native Swift mode: the Safari fixture connected, the reviewed-view command completed, and the visible postcondition read `State: reviewed`.
+- A prior deployed build exercised the bounded Mac Workspace Typing Test, but the route is now deferred after review found unresolved ancestor and file-handoff race conditions. No workspace action is part of the current bounded scope.
+- Added the reversible `return_to_landing_fixture_view` capability with exact Safari target binding, state-dependent fixed-label CuaDriver/native execution, bounded FastSubtask observation, and independent landing-state verification. The target-Mac full suite passed with 92 tests and 0 failures.
+- Deployed the clean release bundle after removing the temporary landing probe. Re-approved the ad-hoc bundle's Accessibility permission, reloaded the synthetic fixture after detecting stale pre-change DOM, and verified the live bounded CuaDriver transition from reviewed to landing with exact readback. Live Jev remained enabled, the bounded executor remained enabled, experimental desktop mode remained disabled, and no additional provider request occurred.
 - Revalidated the official TypeSafe System One request and Choice response contract, then added the network-free `TypeSafeChoiceClient` with explicit status, timeout, cancellation, malformed-response, closed-choice, probability, and payload-limit handling.
-- Sent one explicitly authorized synthetic TypeSafe smoke request from the configured target Mac; the provider returned HTTP 403, no selection or local action followed, and no retry was made. Gate 2 remains blocked pending account-specific provider clarification.
+- The SSH TypeSafe smoke harness was invalidated: the target Mac's Keychain item exists, but `security -w` under the SSH-executed shell returns exit 36 with an empty value. The harness had not checked that failure and could send an empty Bearer value, so its 403 results are not account evidence. The hardened harness now fails closed before curl.
+- With separate approval, a temporary GUI app invoked the existing `LiveJevSelectionAdapter` through the native Keychain and URLSession path using the bounded Safari fixture. It received `select_reviewed_fixture_view`, dispatched no capability, mutated no Safari state, and confirmed the probe-time flag was `0`. The temporary probe bundle and probe mode were removed afterward. The target Mac's Release bundle was then deployed, code-signature verified, relaunched, and explicitly configured with `jev.liveSelection.enabled=1`; no live decision was triggered during deployment. The deployed bundle was subsequently approved in macOS Accessibility settings, and the bounded Safari route was verified without another provider request. The workspace route is now deferred.
 
 ## In Progress
 
 - Keep the experimental voice/send controls fail-closed until the complete Hermes and CuaDriver preflight returns `ready`.
 - Preserve the transport evidence: Tailscale SSH identity, one active run, stop propagation, exit-status diagnostics, and uncertain outcomes become `outcome_unknown` without replay.
 - The native fixture gate is closed with one Daniel-approved harmless task and a visible verified postcondition; no task was replayed automatically after the false-success reports.
-- Measure the fast route from speech release to CuaDriver confirmation; the read-only target CuaDriver call is currently 0.048 seconds, excluding speech capture.
-- Keep live dynamic Jev policy, OCR, Chrome DOM/CDP, and generic CuaDriver integration deferred. The fixture-backed TypeSafe boundary is validated, but live transport still requires Gate 2 authorization, egress, target, and verification gates.
+- The Accessibility expansion gate is closed only for the two bounded Safari fixture transitions. The app-owned TextEdit workspace probe remains deferred pending race-resistant file handoff and independent document verification.
+- Keep the fast Notes/current-cursor routes deferred until exact target binding and independent postcondition verification are implemented.
+- Keep live dynamic Jev policy, OCR, Chrome DOM/CDP, and generic CuaDriver integration deferred. Gate 2 is conditionally approved for the current bounded private prototype after Daniel confirmed the DOO MADE approval, company TypeSafe contract/Order, direct API, manual funding, automatic-refill setting, and retention/data-processing conditions. Broader data egress and production use remain outside the gate.
 
 ## Next Up
 
-1. Resolve the account-specific Gate 2 decision: authorization, direct-call versus relay, retention, and credential-storage conditions.
-2. If Gate 2 closes, add a separate Mac transport and manually approved synthetic smoke test. Otherwise keep the fixture transport as the terminal slice.
+1. The Safari-only Gate 2 and bounded Accessibility checkpoint is staged and passed independent security review; commit only after target-Mac Swift validation is available or the validation gap is explicitly accepted.
+2. Keep automatic refill off and the current bounded payload allowlist; review any broader field set separately before changing code.
 3. Preserve the explicit boundary: live dynamic Jev, OCR, Chrome DOM/CDP, and generic CuaDriver execution remain deferred.
 
 ## Architecture Decisions
@@ -100,7 +106,7 @@ Validate the provider-shaped TypeSafe Choice boundary with fixture transport whi
 - Speech permission and actual on-device lifecycle behavior in the user session.
 - Global hotkey and utility panel behavior on the target OS.
 - Safari fixture hosting, accessibility identity, native action path, and verifier.
-- Account-specific TypeSafe authorization and direct-client conditions.
+- Broader TypeSafe data scope, production authorization, and any future public-service use.
 - Provider retention/deletion/operational logging for Daniel's account.
 - Hermes controller transport: the app uses the authenticated Tailscale SSH identity and remote Hermes CLI; preflight now covers both the Hermes launcher and Mac CuaDriver before enabling send/voice controls.
 - CuaDriver 0.28.2 reports Accessibility and Screen Recording readiness; unrestricted-mode operation remains unclaimed until the correct daemon launch path is independently verified.

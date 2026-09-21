@@ -52,4 +52,23 @@ final class FakeSafariFixtureTests: XCTestCase {
 
         XCTAssertFalse(fixture.verify(expected: .reviewed, observed: firstObservation))
     }
+
+    func testLandingResetCapabilityReturnsReviewedFixtureToLanding() throws {
+        var fixture = FakeSafariFixture(target: target)
+        let reviewCandidate = try XCTUnwrap(
+            CapabilityRegistry.firstSliceCandidates(target: target)
+                .first(where: { $0.id == .selectReviewedFixtureView })
+        )
+        let landingCandidate = try XCTUnwrap(
+            CapabilityRegistry.firstSliceCandidates(target: target)
+                .first(where: { $0.id == .returnToLandingFixtureView })
+        )
+
+        _ = try fixture.execute(reviewCandidate)
+        let observation = try fixture.execute(landingCandidate)
+
+        XCTAssertEqual(observation.view, .landing)
+        XCTAssertTrue(fixture.verify(expected: .landing, observed: observation))
+        XCTAssertEqual(fixture.dispatchCount, 2)
+    }
 }

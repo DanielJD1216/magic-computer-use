@@ -72,9 +72,11 @@ public actor FastSubtaskSafariFixtureBackend: FastDesktopBackend {
                 && action.inputKey == nil
                 && action.value == nil
         case .click:
-            guard action.inputKey == nil, action.value == nil,
-                  action.targetID == "reviewed-fixture-view",
-                  let element = currentSnapshot.element("reviewed-fixture-view") else {
+            guard action.inputKey == nil,
+                  action.value == nil,
+                  let targetID = action.targetID,
+                  targetID == Self.transitionTargetID(for: currentSnapshot.context["fixture_view"]),
+                  let element = currentSnapshot.element(targetID) else {
                 return false
             }
             return element.actions.contains(.click)
@@ -98,15 +100,24 @@ public actor FastSubtaskSafariFixtureBackend: FastDesktopBackend {
             throw FastSubtaskSafariFixtureBackendError.staleTarget
         }
         guard action.kind == .click,
-              action.targetID == "reviewed-fixture-view",
+              let targetID = action.targetID,
               action.inputKey == nil,
               action.value == nil else {
+            throw FastSubtaskSafariFixtureBackendError.unsupportedAction
+        }
+        let capabilityID: CapabilityID
+        switch targetID {
+        case "reviewed-fixture-view":
+            capabilityID = .selectReviewedFixtureView
+        case "landing-fixture-view":
+            capabilityID = .returnToLandingFixtureView
+        default:
             throw FastSubtaskSafariFixtureBackendError.unsupportedAction
         }
 
         guard let candidate = CapabilityRegistry
             .firstSliceCandidates(target: target)
-            .first(where: { $0.id == .selectReviewedFixtureView }) else {
+            .first(where: { $0.id == capabilityID }) else {
             throw FastSubtaskSafariFixtureBackendError.capabilityUnavailable
         }
         do {
@@ -158,7 +169,19 @@ public actor FastSubtaskSafariFixtureBackend: FastDesktopBackend {
             )]
         case .reviewed:
             viewName = "reviewed"
-            elements = []
+            elements = [FastDesktopElement(
+                id: "landing-fixture-view",
+                role: "button",
+                name: "Return to landing fixture view",
+                value: nil,
+                actions: [.click],
+                enabled: true,
+                visible: true,
+                semanticGuard: semanticGuard(
+                    observation: observation,
+                    target: target
+                )
+            )]
         }
 
         return FastDesktopSnapshot(
@@ -187,6 +210,17 @@ public actor FastSubtaskSafariFixtureBackend: FastDesktopBackend {
             observation.revision.description
         ].joined(separator: ":")
     }
+
+    private static func transitionTargetID(for view: String?) -> String? {
+        switch view {
+        case "landing":
+            return "reviewed-fixture-view"
+        case "reviewed":
+            return "landing-fixture-view"
+        default:
+            return nil
+        }
+    }
 }
 
 public struct FastSubtaskSafariFixtureVerifier: FastDesktopVerifier, Sendable {
@@ -202,8 +236,15 @@ public struct FastSubtaskSafariFixtureVerifier: FastDesktopVerifier, Sendable {
         verification: FastDesktopVerificationID,
         snapshot: FastDesktopSnapshot
     ) async -> FastDesktopVerificationResult {
-        guard verification == .reviewedFixture else {
-            return .unavailable
+        let expectedView: FixtureView
+        let expectedTargetID: String
+        switch verification {
+        case .reviewedFixture:
+            expectedView = .reviewed
+            expectedTargetID = "landing-fixture-view"
+        case .landingFixture:
+            expectedView = .landing
+            expectedTargetID = "reviewed-fixture-view"
         }
         guard FastSubtaskSafariFixtureBackend.matchesBinding(
             snapshot: snapshot,
@@ -214,10 +255,10 @@ public struct FastSubtaskSafariFixtureVerifier: FastDesktopVerifier, Sendable {
 
         let observation = await state.observe()
         guard observation.target == target,
-              observation.view == .reviewed,
-              snapshot.context["fixture_view"] == "reviewed",
+              observation.view == expectedView,
+              snapshot.context["fixture_view"] == (expectedView == .reviewed ? "reviewed" : "landing"),
               snapshot.revision == "fixture-\(observation.revision)",
-              snapshot.visibleElements.isEmpty else {
+              snapshot.visibleElements.map(\.id) == [expectedTargetID] else {
             return .notSatisfied
         }
         return .satisfied

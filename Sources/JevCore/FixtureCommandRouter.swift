@@ -13,6 +13,11 @@ public enum FixtureCommandRouter {
         )
         let candidateIDs = Set(candidates.map(\.id))
 
+        if (words.contains("landing") || words.contains("reset")),
+           candidateIDs.contains(.returnToLandingFixtureView) {
+            return .returnToLandingFixtureView
+        }
+
         if words.contains("wait"),
            words.contains("reviewed"),
            candidateIDs.contains(.waitForReviewedFixtureState) {

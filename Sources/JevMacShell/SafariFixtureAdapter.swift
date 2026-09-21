@@ -17,6 +17,7 @@ enum SafariFixtureAdapterError: Error, Equatable, LocalizedError, Sendable {
     case fixtureWindowNotFound
     case windowIdentityUnavailable
     case reviewedButtonNotFound
+    case landingButtonNotFound
     case pressFailed(Int32)
     case verificationTimedOut
 
@@ -34,10 +35,12 @@ enum SafariFixtureAdapterError: Error, Equatable, LocalizedError, Sendable {
             return "The Safari fixture window identity could not be verified."
         case .reviewedButtonNotFound:
             return "The reviewed fixture control was not found."
+        case .landingButtonNotFound:
+            return "The landing fixture control was not found."
         case let .pressFailed(status):
             return "The native fixture press failed with status \(status)."
         case .verificationTimedOut:
-            return "The reviewed fixture postcondition was not observed before the deadline."
+            return "The requested fixture postcondition was not observed before the deadline."
         }
     }
 }
@@ -46,7 +49,9 @@ enum SafariFixtureAdapterError: Error, Equatable, LocalizedError, Sendable {
 final class SafariFixtureAdapter {
     private static let fixtureTitle = "Jev Fixture v1"
     private static let reviewedButtonLabel = "Select reviewed fixture view"
+    private static let landingButtonLabel = "Return to landing fixture view"
     private static let reviewedState = "State: reviewed"
+    private static let landingState = "State: landing"
     private static let fixtureVersion = "safari-fixture-v1"
 
     let fixtureURL: URL
@@ -63,6 +68,14 @@ final class SafariFixtureAdapter {
         guard FileManager.default.fileExists(atPath: fixtureURL.path) else {
             throw SafariFixtureAdapterError.fixtureFileMissing
         }
+
+        // Reuse an already uniquely identified fixture. Opening the declared
+        // file first can create a second Safari window and make the target
+        // ambiguous, which must remain fail-closed.
+        if let existingObservation = observe() {
+            return existingObservation
+        }
+
         guard NSWorkspace.shared.open(fixtureURL) else {
             throw SafariFixtureAdapterError.fixtureWindowNotFound
         }
@@ -85,7 +98,7 @@ final class SafariFixtureAdapter {
         }
 
         let application = AXUIElementCreateApplication(safari.processIdentifier)
-        guard let window = Self.findFixtureWindow(in: application) else {
+        guard let window = Self.findFixtureWindow(in: application, expectedURL: fixtureURL) else {
             return nil
         }
         guard let title = Self.stringAttribute(window, kAXTitleAttribute),
@@ -119,6 +132,19 @@ final class SafariFixtureAdapter {
     func waitForReviewed(
         expectedTarget: TargetBinding
     ) async throws -> SafariFixtureRuntimeObservation {
+        try await waitFor(expectedView: .reviewed, expectedTarget: expectedTarget)
+    }
+
+    func waitForLanding(
+        expectedTarget: TargetBinding
+    ) async throws -> SafariFixtureRuntimeObservation {
+        try await waitFor(expectedView: .landing, expectedTarget: expectedTarget)
+    }
+
+    private func waitFor(
+        expectedView: FixtureView,
+        expectedTarget: TargetBinding
+    ) async throws -> SafariFixtureRuntimeObservation {
         guard AXIsProcessTrusted() else {
             throw SafariFixtureAdapterError.accessibilityDenied
         }
@@ -126,7 +152,7 @@ final class SafariFixtureAdapter {
         for _ in 0..<15 {
             if let observation = observe(),
                observation.binding == expectedTarget,
-               observation.view == .reviewed {
+               observation.view == expectedView {
                 return observation
             }
             try await Task.sleep(nanoseconds: 100_000_000)
@@ -135,6 +161,28 @@ final class SafariFixtureAdapter {
     }
 
     func selectReviewed(
+        expectedTarget: TargetBinding
+    ) async throws -> SafariFixtureRuntimeObservation {
+        try await select(
+            expectedView: .reviewed,
+            buttonLabel: Self.reviewedButtonLabel,
+            expectedTarget: expectedTarget
+        )
+    }
+
+    func selectLanding(
+        expectedTarget: TargetBinding
+    ) async throws -> SafariFixtureRuntimeObservation {
+        try await select(
+            expectedView: .landing,
+            buttonLabel: Self.landingButtonLabel,
+            expectedTarget: expectedTarget
+        )
+    }
+
+    private func select(
+        expectedView: FixtureView,
+        buttonLabel: String,
         expectedTarget: TargetBinding
     ) async throws -> SafariFixtureRuntimeObservation {
         guard AXIsProcessTrusted() else {
@@ -147,7 +195,7 @@ final class SafariFixtureAdapter {
         }
 
         let application = AXUIElementCreateApplication(safari.processIdentifier)
-        guard let window = Self.findFixtureWindow(in: application) else {
+        guard let window = Self.findFixtureWindow(in: application, expectedURL: fixtureURL) else {
             throw SafariFixtureAdapterError.fixtureWindowNotFound
         }
         guard let title = Self.stringAttribute(window, kAXTitleAttribute),
@@ -166,16 +214,27 @@ final class SafariFixtureAdapter {
             throw SafariFixtureAdapterError.windowIdentityUnavailable
         }
 
-        if Self.hasReviewedPostcondition(title: title, in: window) {
+        if expectedView == .reviewed,
+           Self.hasReviewedPostcondition(title: title, in: window) {
             return SafariFixtureRuntimeObservation(
                 binding: actualTarget,
                 view: .reviewed,
                 title: title
             )
         }
+        if expectedView == .landing,
+           Self.hasLandingPostcondition(title: title, in: window) {
+            return SafariFixtureRuntimeObservation(
+                binding: actualTarget,
+                view: .landing,
+                title: title
+            )
+        }
 
-        guard let button = Self.findReviewedButton(in: window) else {
-            throw SafariFixtureAdapterError.reviewedButtonNotFound
+        guard let button = Self.findButton(in: window, label: buttonLabel) else {
+            throw expectedView == .reviewed
+                ? SafariFixtureAdapterError.reviewedButtonNotFound
+                : SafariFixtureAdapterError.landingButtonNotFound
         }
         let pressStatus = AXUIElementPerformAction(button, kAXPressAction as CFString)
         guard pressStatus == .success else {
@@ -185,7 +244,7 @@ final class SafariFixtureAdapter {
         for _ in 0..<15 {
             if let observation = observe(),
                observation.binding == expectedTarget,
-               observation.view == .reviewed {
+               observation.view == expectedView {
                 return observation
             }
             try await Task.sleep(nanoseconds: 100_000_000)
@@ -193,14 +252,53 @@ final class SafariFixtureAdapter {
         throw SafariFixtureAdapterError.verificationTimedOut
     }
 
-    private static func findFixtureWindow(in application: AXUIElement) -> AXUIElement? {
+    private static func findFixtureWindow(
+        in application: AXUIElement,
+        expectedURL: URL
+    ) -> AXUIElement? {
         for window in children(of: application, attribute: kAXWindowsAttribute) {
             let title = stringAttribute(window, kAXTitleAttribute) ?? ""
-            if title.contains(fixtureTitle) || containsFixtureTitle(in: window, depth: 0) {
+            guard title.contains(fixtureTitle) || containsFixtureTitle(in: window, depth: 0) else {
+                continue
+            }
+            if hasExactFixtureDocument(in: window, expectedURL: expectedURL, depth: 0) {
                 return window
             }
         }
         return nil
+    }
+
+    private static func hasExactFixtureDocument(
+        in element: AXUIElement,
+        expectedURL: URL,
+        depth: Int
+    ) -> Bool {
+        guard depth < 12 else { return false }
+        let expectedPath = expectedURL.standardizedFileURL.path
+        for attribute in [kAXDocumentAttribute, "AXURL"] {
+            guard let value = attributeValue(element, attribute) else { continue }
+            let stringValue: String?
+            if let value = value as? String {
+                stringValue = value
+            } else if let value = value as? URL {
+                stringValue = value.absoluteString
+            } else if let value = value as? NSURL {
+                stringValue = value.absoluteString
+            } else {
+                stringValue = nil
+            }
+            guard let stringValue else { continue }
+            if let documentURL = URL(string: stringValue), documentURL.isFileURL {
+                if documentURL.standardizedFileURL.path == expectedPath {
+                    return true
+                }
+            } else if stringValue == expectedPath {
+                return true
+            }
+        }
+        return children(of: element, attribute: kAXChildrenAttribute).contains {
+            hasExactFixtureDocument(in: $0, expectedURL: expectedURL, depth: depth + 1)
+        }
     }
 
     private static func containsFixtureTitle(in element: AXUIElement, depth: Int) -> Bool {
@@ -218,7 +316,7 @@ final class SafariFixtureAdapter {
         }
     }
 
-    private static func findReviewedButton(in window: AXUIElement) -> AXUIElement? {
+    private static func findButton(in window: AXUIElement, label: String) -> AXUIElement? {
         find(in: window, depth: 0) { element in
             guard stringAttribute(element, kAXRoleAttribute) == kAXButtonRole else {
                 return false
@@ -230,7 +328,7 @@ final class SafariFixtureAdapter {
                 stringAttribute(element, "AXIdentifier")
             ]
             return values.contains {
-                normalize($0) == normalize(reviewedButtonLabel)
+                normalize($0) == normalize(label)
             }
         }
     }
@@ -242,7 +340,7 @@ final class SafariFixtureAdapter {
 
     private static func hasLandingPostcondition(title: String, in window: AXUIElement) -> Bool {
         title.hasSuffix("| Landing")
-            && currentFixtureState(in: window) == "State: landing"
+            && currentFixtureState(in: window) == landingState
     }
 
     private static func currentFixtureState(in window: AXUIElement) -> String? {

@@ -103,17 +103,14 @@ final class ShellModel: ObservableObject {
     private let speechCapture = SpeechCapture()
     private let fixtureAdapter: SafariFixtureAdapter
     private let computerUseAdapter: CuaDriverFixtureAdapter
-    private let workspaceAdapter: CuaDriverWorkspaceAdapter
-    private let fastDesktopActionAdapter: FastDesktopActionAdapter
     private let fastSubtaskRunner: SafariFixtureFastSubtaskRunner
     private let liveJevAdapter = LiveJevSelectionAdapter()
-    private let hermesControllerBridge: HermesSSHControllerBridge
     private var fixtureObservation: SafariFixtureRuntimeObservation?
     private var lastRecognizedTranscript = ""
     private var sessionLedger = SessionLedger(sessionID: UUID().uuidString)
     private var activeCallback: CallbackIdentity?
     private var activeDispatchTask: Task<Void, Never>?
-    private var activeDesktopRunID: String?
+
 
     var isFixtureConnected: Bool {
         fixtureObservation != nil
@@ -170,10 +167,7 @@ final class ShellModel: ObservableObject {
         let fixtureAdapter = SafariFixtureAdapter()
         self.fixtureAdapter = fixtureAdapter
         self.computerUseAdapter = CuaDriverFixtureAdapter()
-        self.workspaceAdapter = CuaDriverWorkspaceAdapter()
-        self.fastDesktopActionAdapter = FastDesktopActionAdapter()
         self.fastSubtaskRunner = SafariFixtureFastSubtaskRunner(adapter: fixtureAdapter)
-        self.hermesControllerBridge = HermesSSHControllerBridge()
 
         speechCapture.onPhaseChange = { [weak self] phase in
             self?.apply(phase: phase)
@@ -285,13 +279,6 @@ final class ShellModel: ObservableObject {
         activeCallback = nil
         activeDispatchTask?.cancel()
         activeDispatchTask = nil
-        let runID = activeDesktopRunID
-        activeDesktopRunID = nil
-        if let runID {
-            Task { [hermesControllerBridge] in
-                try? await hermesControllerBridge.stop(runID: runID)
-            }
-        }
         status = .stopped
         transcript = "Stopped. No action dispatched or retried."
         actionDetail = "Any late callback is stale and cannot update this session."
@@ -308,7 +295,6 @@ final class ShellModel: ObservableObject {
         activeCallback = nil
         activeDispatchTask?.cancel()
         activeDispatchTask = nil
-        activeDesktopRunID = nil
         status = .armed
         transcript = fixtureObservation == nil
             ? "Connect the exact local Safari fixture first."
@@ -322,91 +308,28 @@ final class ShellModel: ObservableObject {
     }
 
     func refreshDesktopController() {
-        Task { @MainActor [weak self] in
-            await self?.refreshDesktopControllerReadiness()
-        }
+        desktopControllerReady = false
+        desktopControllerStatus = "Deferred • no experimental desktop controller is enabled"
     }
 
     func runWorkspaceTypingProbe() {
-        guard !isBusy else { return }
-        guard computerUseMode == .bounded else {
-            status = .blocked
-            actionDetail = "Switch to bounded CuaDriver mode before running the Jev workspace test."
-            recordActivity(
-                title: "Workspace test blocked",
-                detail: "The workspace probe is available only in bounded mode."
-            )
-            return
-        }
-
-        let sessionGeneration = sessionLedger.sessionGeneration
-        status = .executing
-        transcript = "Running the Jev workspace test…"
-        actionDetail = "Opening an app-owned TextEdit scratchpad and typing through CuaDriver."
+        status = .blocked
+        transcript = "Workspace test deferred."
+        actionDetail = "No workspace action was dispatched. Descriptor-bound file handoff verification is still required."
         recordActivity(
-            title: "Workspace test started",
-            detail: "Typing only in the Jev-owned TextEdit workspace."
+            title: "Workspace test deferred",
+            detail: "No TextEdit document or CuaDriver input was opened."
         )
-
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            do {
-                let observation = try await workspaceAdapter.runTypingProbe()
-                guard sessionLedger.sessionGeneration == sessionGeneration else { return }
-                status = .verifying
-                actionDetail = "Verifying the fresh TextEdit accessibility readback."
-                guard observation.text == "Jev computer-use workspace probe" else {
-                    status = .outcomeUnknown
-                    actionDetail = "The workspace text readback was not exact. No retry was made."
-                    return
-                }
-                status = .completed
-                transcript = "Workspace test complete."
-                actionDetail = "Verified CuaDriver text input in the Jev-owned TextEdit workspace."
-                recordActivity(
-                    title: "Workspace test completed",
-                    detail: "Fresh TextEdit accessibility readback matched exactly."
-                )
-            } catch {
-                guard sessionLedger.sessionGeneration == sessionGeneration else { return }
-                status = .outcomeUnknown
-                actionDetail = "Workspace outcome unknown: \(error.localizedDescription) No automatic retry was made."
-                recordActivity(
-                    title: "Workspace outcome unknown",
-                    detail: "No automatic retry was made."
-                )
-            }
-        }
     }
 
     func submitDesktopTask(_ task: String) {
-        let trimmedTask = task.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard computerUseMode == .experimentalDesktop else {
-            status = .blocked
-            actionDetail = "Switch to experimental desktop mode before submitting a desktop task."
-            return
-        }
-        guard !trimmedTask.isEmpty else {
-            status = .blocked
-            transcript = "Enter one concrete desktop task first."
-            actionDetail = "No task was sent because the task field was empty."
-            recordActivity(
-                title: "Desktop task blocked",
-                detail: "The task field was empty."
-            )
-            return
-        }
-        guard desktopControllerReady else {
-            status = .blocked
-            transcript = "Desktop task not sent."
-            actionDetail = "Controller bridge required. No task was sent."
-            recordActivity(
-                title: "Desktop task blocked",
-                detail: "Hermes controller bridge is not connected."
-            )
-            return
-        }
-        startDesktopTask(trimmedTask)
+        status = .blocked
+        transcript = "Experimental desktop tasks are deferred."
+        actionDetail = "No Hermes desktop task was submitted. The accepted surface is limited to the Safari fixture."
+        recordActivity(
+            title: "Desktop task deferred",
+            detail: "No arbitrary desktop action was dispatched."
+        )
     }
 
     private func apply(phase: SpeechCapturePhase) {
@@ -455,7 +378,8 @@ final class ShellModel: ObservableObject {
         transcript = commandTranscript
 
         if computerUseMode == .experimentalDesktop {
-            startDesktopTask(commandTranscript)
+            status = .blocked
+            actionDetail = "Experimental desktop tasks are deferred. No task was submitted."
             return
         }
 
@@ -548,161 +472,13 @@ final class ShellModel: ObservableObject {
     }
 
     private func startDesktopTask(_ task: String) {
-        let normalizedTask: String
-        do {
-            normalizedTask = try HermesDesktopTaskPolicy.validate(task)
-        } catch HermesDesktopTaskPolicyError.empty {
-            status = .blocked
-            transcript = "No desktop task was captured."
-            actionDetail = "The voice task was empty."
-            return
-        } catch HermesDesktopTaskPolicyError.tooLong {
-            status = .blocked
-            transcript = "Desktop task too long."
-            actionDetail = "Keep the task under \(HermesDesktopTaskPolicy.maximumTaskLength) characters."
-            return
-        } catch {
-            status = .blocked
-            actionDetail = "Desktop task rejected by the local input policy."
-            return
-        }
-
-        guard desktopControllerReady else {
-            status = .blocked
-            actionDetail = "Hermes/CuaDriver preflight is not ready. No task was sent."
-            return
-        }
-
-        if let intent = FastDesktopTaskRouter.route(normalizedTask) {
-            switch intent {
-            case let .clarification(message):
-                status = .blocked
-                actionDetail = message
-                recordActivity(
-                    title: "Fast desktop action needs clarification",
-                    detail: "No Hermes task was sent."
-                )
-            case .openNotes, .typeAtCurrentCursor:
-                runFastDesktopAction(intent)
-            }
-            return
-        }
-
-        sessionLedger.startNewGoal()
-        activeCallback = nil
-        activeDesktopRunID = nil
-        let sessionGeneration = sessionLedger.sessionGeneration
-        status = .executing
-        transcript = normalizedTask
-        actionDetail = "Sending the voice task to Hermes on the current Mac controller."
-        recordActivity(
-            title: "Desktop task started",
-            detail: "Hermes is acting through the current Mac CuaDriver controller."
-        )
-
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            do {
-                let receipt = try await hermesControllerBridge.submit(task: normalizedTask)
-                guard sessionLedger.sessionGeneration == sessionGeneration else {
-                    try? await hermesControllerBridge.stop(runID: receipt.runID)
-                    return
-                }
-                activeDesktopRunID = receipt.runID
-
-                for await event in hermesControllerBridge.events(for: receipt.runID) {
-                    guard sessionLedger.sessionGeneration == sessionGeneration else { return }
-                    switch event {
-                    case .started:
-                        status = .executing
-                        actionDetail = "Hermes started the desktop task."
-                    case let .progress(_, detail):
-                        status = .executing
-                        actionDetail = detail
-                    case let .completed(_, detail):
-                        activeDesktopRunID = nil
-                        status = .completed
-                        transcript = "Desktop action reported."
-                        actionDetail = detail
-                        recordActivity(
-                            title: "Desktop action reported",
-                            detail: "Hermes reported a successful CuaDriver input action."
-                        )
-                    case let .stopped(_, detail):
-                        activeDesktopRunID = nil
-                        status = .stopped
-                        actionDetail = detail
-                        recordActivity(title: "Desktop task stopped", detail: "No automatic retry was made.")
-                    case let .failed(_, detail), let .disconnected(_, detail):
-                        activeDesktopRunID = nil
-                        status = .outcomeUnknown
-                        actionDetail = "\(detail). No automatic retry was made."
-                        recordActivity(title: "Desktop task outcome unknown", detail: "No automatic retry was made.")
-                    }
-                }
-            } catch {
-                guard sessionLedger.sessionGeneration == sessionGeneration else { return }
-                activeDesktopRunID = nil
-                status = .outcomeUnknown
-                actionDetail = "Desktop task outcome unknown: \(error.localizedDescription) No automatic retry was made."
-                recordActivity(title: "Desktop task outcome unknown", detail: "No automatic retry was made.")
-            }
-        }
-    }
-
-    private func runFastDesktopAction(_ intent: FastDesktopIntent) {
-        sessionLedger.startNewGoal()
-        activeCallback = nil
-        activeDesktopRunID = nil
-        let sessionGeneration = sessionLedger.sessionGeneration
-        status = .executing
-        actionDetail = fastDesktopActionDescription(for: intent)
-        recordActivity(
-            title: "Fast desktop action started",
-            detail: "Using the native CuaDriver route without Hermes."
-        )
-
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            do {
-                let result = try await fastDesktopActionAdapter.run(intent)
-                guard sessionLedger.sessionGeneration == sessionGeneration else { return }
-                status = .completed
-                transcript = "Fast desktop action reported."
-                actionDetail = result.detail
-                recordActivity(
-                    title: "Fast desktop action reported",
-                    detail: result.detail
-                )
-            } catch {
-                guard sessionLedger.sessionGeneration == sessionGeneration else { return }
-                status = .outcomeUnknown
-                actionDetail = "Fast desktop action outcome unknown: \(error.localizedDescription) No automatic retry was made."
-                recordActivity(
-                    title: "Fast desktop action outcome unknown",
-                    detail: "No automatic retry was made."
-                )
-            }
-        }
-    }
-
-    private func fastDesktopActionDescription(for intent: FastDesktopIntent) -> String {
-        switch intent {
-        case .openNotes:
-            return "Opening Notes through the native fast path."
-        case .typeAtCurrentCursor:
-            return "Typing at the current cursor through the native CuaDriver fast path."
-        case let .clarification(message):
-            return message
-        }
+        status = .blocked
+        actionDetail = "Experimental desktop tasks are deferred. No task was submitted."
     }
 
     private func refreshDesktopControllerReadiness() async {
-        let preflight = await hermesControllerBridge.preflight()
-        desktopControllerReady = preflight.isReady
-        desktopControllerStatus = preflight.isReady
-            ? "Ready • Hermes over Tailscale SSH • Mac CuaDriver"
-            : "Unavailable • check Hermes relay, command, and CuaDriver readiness"
+        desktopControllerReady = false
+        desktopControllerStatus = "Deferred • no experimental desktop controller is enabled"
     }
 
     private func dispatch(_ candidate: CapabilityCandidate, callback: CallbackIdentity) {
@@ -756,6 +532,54 @@ final class ShellModel: ObservableObject {
                         guard let verifiedObservation = fixtureAdapter.observe(),
                               verifiedObservation.binding == candidate.target,
                               verifiedObservation.view == .reviewed else {
+                            status = .outcomeUnknown
+                            actionDetail = "Fast subtask completed without an exact fixture readback. No automatic retry was made."
+                            return
+                        }
+                        observation = verifiedObservation
+                    }
+                case .returnToLandingFixtureView:
+                    if ComputerUseConfiguration.isEnabled {
+                        guard try ComputerUsePolicy.action(for: candidate) == .pressLandingFixture else {
+                            status = .blocked
+                            actionDetail = "The computer-use policy rejected this capability."
+                            return
+                        }
+                        status = .executing
+                        actionDetail = "Dispatching the exact landing control through CuaDriver."
+                        try await computerUseAdapter.pressLandingFixture(
+                            expectedTarget: candidate.target
+                        )
+                        status = .verifying
+                        observation = try await fixtureAdapter.waitForLanding(
+                            expectedTarget: candidate.target
+                        )
+                    } else {
+                        status = .executing
+                        actionDetail = "Dispatching the capability through the bounded FastSubtaskExecutor."
+                        let result = try await fastSubtaskRunner.execute(candidate: candidate)
+                        guard sessionLedger.accepts(callback), activeCallback == callback else {
+                            return
+                        }
+                        guard result.status == .subtaskComplete else {
+                            switch result.status {
+                            case .stopped:
+                                status = .stopped
+                                actionDetail = "Fast subtask stopped. No retry was made."
+                            case .outcomeUnknown:
+                                status = .outcomeUnknown
+                                actionDetail = "Fast subtask outcome unknown. No automatic retry was made."
+                            case .blocked, .needsAgent:
+                                status = .blocked
+                                actionDetail = "Fast subtask blocked: \(result.reasonCode ?? "verification_required")"
+                            case .subtaskComplete:
+                                break
+                            }
+                            return
+                        }
+                        guard let verifiedObservation = fixtureAdapter.observe(),
+                              verifiedObservation.binding == candidate.target,
+                              verifiedObservation.view == .landing else {
                             status = .outcomeUnknown
                             actionDetail = "Fast subtask completed without an exact fixture readback. No automatic retry was made."
                             return
@@ -905,16 +729,11 @@ struct ShellActivity: Identifiable, Equatable {
 
 struct CommandPanel: View {
     @ObservedObject var model: ShellModel
-    @AppStorage(ComputerUseConfiguration.enabledKey) private var boundedExecutorEnabled = false
-    @AppStorage(ComputerUseConfiguration.experimentalDesktopKey) private var experimentalDesktopEnabled = false
     @State private var isShowingLiveConfiguration = false
     @State private var desktopTask = ""
 
     private var activeMode: ComputerUseMode {
-        if experimentalDesktopEnabled {
-            return .experimentalDesktop
-        }
-        return boundedExecutorEnabled ? .bounded : .native
+        ComputerUseConfiguration.mode
     }
 
     var body: some View {
@@ -1045,7 +864,7 @@ private struct ModeBanner: View {
         case .native:
             return "Jev can use the deterministic native Safari fixture route."
         case .bounded:
-            return "CuaDriver can act only on the Safari fixture or Jev-owned workspace."
+            return "CuaDriver can act only on the exact local Safari fixture controls."
         case .experimentalDesktop:
             return "This targets the current Mac session. It is not isolated."
         }
@@ -1136,13 +955,13 @@ private struct BoundedControlsSurface: View {
             }
             .disabled(model.isBusy)
 
-            Button("Run Mac Workspace Typing Test") {
+            Button("Mac Workspace Typing Test (deferred)") {
                 model.runWorkspaceTypingProbe()
             }
-            .disabled(model.isBusy || mode != .bounded)
+            .disabled(true)
 
             if mode != .bounded {
-                Text("The workspace probe is available only in Bounded CuaDriver mode.")
+                Text("The workspace probe is deferred and unavailable.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -1244,11 +1063,11 @@ struct SettingsView: View {
                         }
                     }
 
-                Text("When enabled, CuaDriver may use only the registered Safari fixture capability or the Jev-owned TextEdit workspace probe. The app still binds an exact target and verifies a fresh postcondition. Arbitrary coordinates, navigation, passwords, system settings, and personal documents remain unavailable.")
+                Text("When enabled, CuaDriver may use only the registered Safari fixture capability. The workspace expansion is deferred. The app binds an exact target and verifies a fresh postcondition. Arbitrary coordinates, navigation, passwords, system settings, and personal documents remain unavailable.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                Text("The first bounded Mac expansion is an app-owned TextEdit scratchpad under Application Support. The test creates a disposable document, types a fixed probe string, and verifies a fresh accessibility readback without touching personal documents or saving outside that workspace.")
+                Text("The next workspace expansion requires descriptor-bound file handoff and exact document identity before it can be enabled. No TextEdit document is created by this checkpoint.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
@@ -1267,11 +1086,10 @@ struct SettingsView: View {
                         experimentalDesktopEnabled = false
                     }
                 } else {
-                    Button("Enable experimental desktop mode", role: .destructive) {
-                        isShowingDesktopConfirmation = true
-                    }
+                    Button("Experimental desktop mode (deferred)") {}
+                        .disabled(true)
 
-                    Text("Use only on a Mac whose visible applications and data you are willing to expose to an unrestricted controller. The mode switch does not start, stop, or scope the external CuaDriver daemon.")
+                    Text("Deferred. The current checkpoint does not expose an unrestricted controller or arbitrary desktop target.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -1317,7 +1135,7 @@ struct SettingsView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Text("Microphone and Speech Recognition permissions are requested only after Hold to Speak. Accessibility is used only for the reviewed Safari fixture and bounded workspace routes. Experimental desktop voice routing stays unavailable until a verified Hermes controller bridge exists.")
+            Text("Microphone and Speech Recognition permissions are requested only after Hold to Speak. Accessibility is used only for the exact local Safari fixture route. Workspace and experimental desktop routing remain deferred.")
                 .foregroundStyle(.secondary)
         }
         .confirmationDialog(

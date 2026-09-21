@@ -19,6 +19,17 @@ final class FixtureCommandRouterTests: XCTestCase {
         XCTAssertEqual(selection, .selectReviewedFixtureView)
     }
 
+    func testLandingRequestSelectsLandingCapability() {
+        let candidates = CapabilityRegistry.firstSliceCandidates(target: target)
+
+        let selection = FixtureCommandRouter.selectCapability(
+            for: "return the fixture to the landing view",
+            candidates: candidates
+        )
+
+        XCTAssertEqual(selection, .returnToLandingFixtureView)
+    }
+
     func testOpenRequestSelectsActivationCapability() {
         let candidates = CapabilityRegistry.firstSliceCandidates(target: target)
 

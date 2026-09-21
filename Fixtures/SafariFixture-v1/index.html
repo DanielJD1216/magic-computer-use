@@ -12,12 +12,27 @@
     <button id="reviewed-view" type="button" aria-label="Select reviewed fixture view">
       Show reviewed fixture view
     </button>
+    <button id="landing-view" type="button" aria-label="Return to landing fixture view" hidden>
+      Return to landing fixture view
+    </button>
   </main>
   <script>
-    document.getElementById('reviewed-view').addEventListener('click', function () {
-      document.getElementById('fixture-state').textContent = 'State: reviewed';
+    var state = document.getElementById('fixture-state');
+    var reviewedButton = document.getElementById('reviewed-view');
+    var landingButton = document.getElementById('landing-view');
+
+    reviewedButton.addEventListener('click', function () {
+      state.textContent = 'State: reviewed';
       document.title = 'Jev Fixture v1 | Reviewed';
-      this.disabled = true;
+      reviewedButton.hidden = true;
+      landingButton.hidden = false;
+    });
+
+    landingButton.addEventListener('click', function () {
+      state.textContent = 'State: landing';
+      document.title = 'Jev Fixture v1 | Landing';
+      landingButton.hidden = true;
+      reviewedButton.hidden = false;
     });
   </script>
 </body>

@@ -36,6 +36,7 @@ public enum FastDesktopTerminal: String, Codable, Sendable {
 
 public enum FastDesktopVerificationID: String, Codable, CaseIterable, Sendable {
     case reviewedFixture
+    case landingFixture
 }
 
 public enum FastDesktopRuntimeCheckpoint: String, Codable, CaseIterable, Hashable, Sendable {

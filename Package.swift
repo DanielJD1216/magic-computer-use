@@ -22,7 +22,10 @@ let package = Package(
         ),
         .executableTarget(
             name: "JevMacShell",
-            dependencies: ["JevCore"]
+            dependencies: ["JevCore"],
+            linkerSettings: [
+                .linkedFramework("Security")
+            ]
         ),
         .testTarget(
             name: "JevCoreTests",

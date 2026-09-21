@@ -46,10 +46,11 @@ private actor MacSafariFastSubtaskBackend: FastDesktopBackend {
                 && action.inputKey == nil
                 && action.value == nil
         case .click:
-            guard action.targetID == "reviewed-fixture-view",
+            guard let targetID = action.targetID,
+                  targetID == Self.transitionTargetID(for: current.context["fixture_view"]),
                   action.inputKey == nil,
                   action.value == nil,
-                  let element = current.element("reviewed-fixture-view") else {
+                  let element = current.element(targetID) else {
                 return false
             }
             return element.visible
@@ -74,11 +75,15 @@ private actor MacSafariFastSubtaskBackend: FastDesktopBackend {
         case .typeText:
             throw MacSafariFastSubtaskBackendError.unsupportedAction
         case .click:
-            guard action.targetID == "reviewed-fixture-view" else {
+            try Task.checkCancellation()
+            switch action.targetID {
+            case "reviewed-fixture-view":
+                _ = try await adapter.selectReviewed(expectedTarget: target)
+            case "landing-fixture-view":
+                _ = try await adapter.selectLanding(expectedTarget: target)
+            default:
                 throw MacSafariFastSubtaskBackendError.unsupportedAction
             }
-            try Task.checkCancellation()
-            _ = try await adapter.selectReviewed(expectedTarget: target)
         }
     }
 
@@ -115,7 +120,21 @@ private actor MacSafariFastSubtaskBackend: FastDesktopBackend {
                 ].joined(separator: ":")
             )]
         } else {
-            elements = []
+            elements = [FastDesktopElement(
+                id: "landing-fixture-view",
+                role: "button",
+                name: "Return to landing fixture view",
+                value: nil,
+                actions: [.click],
+                enabled: true,
+                visible: true,
+                semanticGuard: [
+                    target.processID.description,
+                    target.windowID,
+                    target.fixtureVersion,
+                    viewName
+                ].joined(separator: ":")
+            )]
         }
         return FastDesktopSnapshot(
             application: "Safari",
@@ -129,6 +148,17 @@ private actor MacSafariFastSubtaskBackend: FastDesktopBackend {
             ]
         )
     }
+
+    private static func transitionTargetID(for view: String?) -> String? {
+        switch view {
+        case "landing":
+            return "reviewed-fixture-view"
+        case "reviewed":
+            return "landing-fixture-view"
+        default:
+            return nil
+        }
+    }
 }
 
 private struct MacSafariFastSubtaskVerifier: FastDesktopVerifier {
@@ -139,19 +169,29 @@ private struct MacSafariFastSubtaskVerifier: FastDesktopVerifier {
         verification: FastDesktopVerificationID,
         snapshot: FastDesktopSnapshot
     ) async -> FastDesktopVerificationResult {
-        guard verification == .reviewedFixture,
-              snapshot.application == "Safari",
+        let expectedView: String
+        let expectedElementID: String
+        switch verification {
+        case .reviewedFixture:
+            expectedView = "reviewed"
+            expectedElementID = "landing-fixture-view"
+        case .landingFixture:
+            expectedView = "landing"
+            expectedElementID = "reviewed-fixture-view"
+        }
+        guard snapshot.application == "Safari",
               snapshot.window == target.windowID,
               snapshot.context["fixture_version"] == target.fixtureVersion,
               snapshot.context["target_identity_class"] == "preflighted-safari-fixture",
-              snapshot.context["fixture_view"] == "reviewed" else {
+              snapshot.context["fixture_view"] == expectedView,
+              snapshot.visibleElements.map(\.id) == [expectedElementID] else {
             return .notSatisfied
         }
         guard let current = try? await backend.observe() else {
             return .unavailable
         }
-        return current.context["fixture_view"] == "reviewed"
-            && current.visibleElements.isEmpty
+        return current.context["fixture_view"] == expectedView
+            && current.visibleElements.map(\.id) == [expectedElementID]
             ? .satisfied
             : .notSatisfied
     }

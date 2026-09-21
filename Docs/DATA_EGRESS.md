@@ -4,7 +4,7 @@
 
 Speech data mode is unresolved pending target-Mac probes. The default preference is on-device recognition if the selected locale and Mac support it. The app must not silently switch to remote recognition. Any remote recognition path requires explicit user consent and documented provider handling.
 
-Live Jev transport is implemented but remains default-off pending explicit Mac-side enablement, a Keychain credential, and account-specific confirmation of the applicable TypeSafe conditions.
+Live Jev transport is implemented and conditionally approved for the current bounded payload after owner confirmation of the applicable TypeSafe account conditions. It still requires explicit Mac-side enablement and a Keychain credential, and it remains prohibited for broader data egress until a separate field-level review approves it.
 
 ## Allowed Jev State
 

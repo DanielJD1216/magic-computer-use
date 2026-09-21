@@ -57,6 +57,19 @@ This checklist gates the private Safari-fixture prototype. It is not representat
 - [ ] One registered native fixture operation executes and exact postcondition verifies.
 - [ ] Already-satisfied, ambiguous, stale-target, missing-permission, timeout, disconnect, and stop scenarios pass.
 
+## Experimental Desktop Mode
+
+- [ ] Native Swift, bounded CuaDriver, and experimental desktop modes are visibly distinct.
+- [ ] Experimental mode names the current Mac session and states that it is not isolated.
+- [ ] Enabling experimental mode requires an explicit confirmation.
+- [ ] Bounded mode remains available as the recovery path and is mutually exclusive with experimental mode.
+- [ ] The task composer, current target, controller status, Stop, Reset, and activity history are present.
+- [ ] Send remains disabled when the Hermes controller bridge is unavailable.
+- [ ] The UI does not claim that unrestricted CuaDriver daemon state is a working Hermes bridge.
+- [ ] No task body, credential, screenshot, raw Accessibility tree, or provider response is written to activity history.
+- [ ] All active controls have accessible labels, keyboard focus, and non-color status text.
+- [ ] Permission, unavailable, blocked, executing, stopped, failed, and outcome-unknown states have an explicit recovery or explanation.
+
 ## Evidence Labels
 
 - **Contract defined:** docs specify behavior.

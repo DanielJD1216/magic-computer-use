@@ -46,6 +46,9 @@ public struct FakeSafariFixture: Sendable {
         case .selectReviewedFixtureView:
             dispatchCount += 1
             currentView = .reviewed
+        case .returnToLandingFixtureView:
+            dispatchCount += 1
+            currentView = .landing
         case .waitForReviewedFixtureState:
             break
         case .stop, .askUser:

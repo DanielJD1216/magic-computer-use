@@ -9,8 +9,10 @@ This is a private prototype for controlled, synthetic, reversible workflows. It 
 3. **Selection adapter:** fixture first; future Jev receives only an allowlisted request and returns a bounded selection.
 4. **Local policy:** owns target, provenance, freshness, risk, confirmation, deadlines, permissions, and cancellation.
 5. **Native executor:** maps exact capability IDs to trusted code; never accepts free-form commands.
-6. **Verifier:** independently checks the expected fixture postcondition.
-7. **Evidence logger:** records only allowlisted summaries.
+6. **Bounded CuaDriver executor:** default-off and limited to the versioned Safari fixture's exact local document identity and fixed controls. The TextEdit workspace expansion is deferred until its descriptor-bound file handoff is independently verified. It never accepts coordinates, arbitrary selectors, shell text, passwords, system-setting actions, or generic desktop actions.
+7. **Experimental desktop UI:** displays a separate, current-Mac mode and task surface, but does not grant execution authority or imply that an Hermes bridge exists.
+8. **Verifier:** independently checks the expected fixture postcondition.
+9. **Evidence logger:** records only allowlisted summaries.
 
 ## Credential Handling
 
@@ -28,11 +30,11 @@ Allowlist IDs, capability, policy/version codes, timestamps, durations, status c
 
 ## Action Safety
 
-No shell, arbitrary coordinates, generic typing, external sites, sending, deletion, purchase, publication, sharing, account changes, or uncontrolled navigation. Recheck all bindings immediately before one trusted dispatch. Stop invalidates authority first. Any uncertain effect becomes `outcome_unknown` and cannot be replayed automatically.
+No shell, arbitrary coordinates, generic typing, external sites, sending, deletion, purchase, publication, sharing, account changes, or uncontrolled navigation. The experimental CuaDriver route is an executor for the fixed fixture action, not an exception to the capability boundary. Recheck all bindings immediately before one trusted dispatch. Stop invalidates authority first. Any uncertain effect becomes `outcome_unknown` and cannot be replayed automatically.
 
 ## Provider Gate
 
-TypeSafe/Jev terms, private-use authorization, direct-client versus relay, provider retention, deletion, operational logging, and training/use handling remain unresolved. Live transport is disabled until authoritative answers and the minimized egress review are recorded.
+TypeSafe/Jev account conditions, direct-client versus relay, provider retention, deletion, operational logging, and training/use handling are owner-confirmed for the current bounded private prototype. The live adapter remains minimized, requires explicit Mac-side enablement plus a Keychain credential, and does not authorize broader data egress, production use, or unrestricted desktop automation. See `Docs/LIVE_JEV.md`.
 
 ## Incident Response
 

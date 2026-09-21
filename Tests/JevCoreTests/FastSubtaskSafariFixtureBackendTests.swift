@@ -45,10 +45,44 @@ final class FastSubtaskSafariFixtureBackendTests: XCTestCase {
         XCTAssertEqual(Set(CapabilityID.allCases), Set([
             .activatePreflightedSafariFixture,
             .selectReviewedFixtureView,
+            .returnToLandingFixtureView,
             .waitForReviewedFixtureState,
             .stop,
             .askUser
         ]))
+    }
+
+    func testLandingClickMapsToTheLandingCapabilityAndChangesFixtureState() async throws {
+        let state = FastSubtaskSafariFixtureState(target: target)
+        let backend = FastSubtaskSafariFixtureBackend(state: state, target: target)
+        let reviewCandidate = try XCTUnwrap(
+            CapabilityRegistry.firstSliceCandidates(target: target)
+                .first(where: { $0.id == .selectReviewedFixtureView })
+        )
+        let landingCandidate = try XCTUnwrap(
+            CapabilityRegistry.firstSliceCandidates(target: target)
+                .first(where: { $0.id == .returnToLandingFixtureView })
+        )
+        _ = try await state.execute(reviewCandidate)
+
+        let before = try await backend.observe()
+        let element = try XCTUnwrap(before.element("landing-fixture-view"))
+        try await backend.execute(
+            action: FastDesktopAction(
+                kind: .click,
+                targetID: element.id,
+                targetGuard: element.semanticGuard,
+                inputKey: nil,
+                value: nil
+            ),
+            against: before
+        )
+        let after = try await backend.observe()
+        let dispatchCount = await state.dispatchCount()
+
+        XCTAssertEqual(after.context["fixture_view"], "landing")
+        XCTAssertEqual(dispatchCount, 2)
+        XCTAssertEqual(try ComputerUsePolicy.action(for: landingCandidate), .pressLandingFixture)
     }
 
     func testTargetGuardAndBindingMismatchAreRejectedBeforeDispatch() async throws {

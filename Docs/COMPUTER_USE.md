@@ -5,17 +5,17 @@ This mode lets JevMacShell use the installed Mac `cua-driver` as the executor fo
 ## Current scope
 
 - Default off.
-- The existing `safari-fixture-v1` target is eligible for `select_reviewed_fixture_view`.
-- The Jev-owned TextEdit scratchpad under `~/Library/Application Support/JevMacShell/Sandbox` is eligible for the fixed workspace probe.
-- The Safari route captures a fresh CuaDriver Accessibility snapshot for the already-bound Safari process and window, requires the exact element label `Select reviewed fixture view`, and sends one Accessibility press.
-- The workspace route creates a unique empty text document under the app-owned workspace, opens it in TextEdit, finds the exact `AXTextArea` in a fresh window snapshot, and types only the fixed probe string.
-- Safari verification remains native and must confirm `State: reviewed`; workspace verification is a fresh exact TextEdit accessibility readback.
+- The existing `safari-fixture-v1` target is eligible for `select_reviewed_fixture_view` and the reversible `return_to_landing_fixture_view` transition.
+- The former Jev-owned TextEdit scratchpad route is deferred. It is not eligible for execution until descriptor-bound file handoff and document identity are independently verified.
+- The Safari route captures a fresh CuaDriver Accessibility snapshot for the already-bound Safari process and window, requires one of the exact fixed labels `Select reviewed fixture view` or `Return to landing fixture view` based on the current fixture state, and sends one Accessibility press.
+- No workspace file is created or opened by the current bounded route.
+- Safari verification remains native and must confirm the exact local fixture document and requested state, either `State: reviewed` or `State: landing`.
 
-The mode does not accept model-provided coordinates, selectors, URLs, shell commands, passwords, system-setting actions, or arbitrary app targets. The workspace probe's text is native-owned and fixed; it is not yet a free-form voice or live Jev capability.
+The mode does not accept model-provided coordinates, selectors, URLs, shell commands, passwords, system-setting actions, or arbitrary app targets. The deferred workspace route performs no action.
 
 ## Fast subtask proof boundary
 
-The reusable `FastSubtaskExecutor` currently has a deterministic Safari fixture backend and an end-to-end fixture test. The native `select_reviewed_fixture_view` capability is now wired through a Mac-side Safari adapter into this bounded executor; the existing bounded CuaDriver route remains a separate execution path. That proof covers bounded observation, legal action-space construction, trusted input-key materialization, freshness, settling, independent verification, cancellation, budgets, stale targets, no-change blocking, uncertain outcomes, and redacted evidence.
+The reusable `FastSubtaskExecutor` currently has a deterministic Safari fixture backend and end-to-end fixture tests for both reversible transitions. The native `select_reviewed_fixture_view` and `return_to_landing_fixture_view` capabilities are wired through a Mac-side Safari adapter into this bounded executor; the CuaDriver route remains a separate execution path. That proof covers bounded observation, legal action-space construction, trusted input-key materialization, freshness, settling, independent verification, cancellation, budgets, stale targets, no-change blocking, uncertain outcomes, and redacted evidence.
 
 This fixture proof does not authorize arbitrary actions on the current Mac. It is not a live Jev policy adapter, OCR executor, Chrome DOM/CDP route, generic CuaDriver controller, or unrestricted desktop bridge. Those integrations remain separately gated and deferred.
 
@@ -27,22 +27,26 @@ push-to-talk transcript
   -> native policy validation
   -> fixed Safari fixture target binding
   -> fresh CuaDriver Accessibility snapshot
-  -> exact fixed-label press
+  -> exact state-dependent fixed-label press
   -> native Safari postcondition verification
 ```
 
-The workspace probe is an explicit app action while its target contract is being validated:
+The former workspace probe is intentionally deferred while its target contract is being validated:
 
 ```text
 explicit Jev workspace test action
-  -> app-owned workspace file
-  -> exact TextEdit window discovery
+  -> trusted ancestor descriptors
+  -> descriptor-bound file handoff
+  -> exact TextEdit document identity
   -> fresh AXTextArea snapshot
-  -> fixed probe text through CuaDriver
   -> exact fresh TextEdit readback
 ```
 
-The capability registry and native Swift policy remain the authority for the Safari route. The workspace probe is not exposed to live Jev selection yet. CuaDriver supplies only the execution mechanism for these allowlisted routes.
+The capability registry and native Swift policy remain the authority for the Safari route. The workspace probe is not exposed to live Jev selection and is not dispatched by the current app. CuaDriver supplies only the execution mechanism for the exact local fixture route.
+
+The former fast Notes and current-cursor shortcuts are intentionally deferred.
+They do not run until each operation has an exact target binding and an
+independent postcondition verifier.
 
 ## Enablement
 
@@ -50,9 +54,44 @@ In the app settings, enable **Enable bounded computer-use executor**. The settin
 
 The Mac must have the CuaDriver executable installed and its required macOS permissions enabled. The app resolves the executable from the known local installation path or standard executable locations. No credentials are passed to CuaDriver.
 
+## Target-Mac evidence
+
+After the deployed bundle was approved in macOS Accessibility settings, the
+bounded workspace route was exercised through the normal command panel with
+the bounded executor enabled:
+
+```text
+Jev Completed
+Workspace test complete.
+Verified CuaDriver text input in the Jev-owned TextEdit workspace.
+Fresh TextEdit accessibility readback matched exactly.
+```
+
+The action created only a disposable app-owned workspace document and used the
+fixed synthetic probe string. No provider request, live Jev selection, personal
+document, screenshot, clipboard value, or generic desktop action was involved.
+
+The next bounded Safari slice was then exercised through the deployed bundle
+after Accessibility was re-approved for the ad-hoc replacement. The temporary
+probe used only the declared Safari target and the fixed landing capability:
+
+```text
+COMPUTER_USE_LANDING_BEFORE=Jev Fixture v1 | Reviewed / reviewed
+COMPUTER_USE_LANDING_AFTER=Jev Fixture v1 | Landing / landing
+COMPUTER_USE_LANDING_EXACT_POSTCONDITION=true
+```
+
+The first attempt failed closed because Safari still held the pre-change
+fixture DOM and therefore did not expose the new landing control. Reloading
+the synthetic fixture through Safari's native Accessibility reload control
+loaded the reviewed/landing control pair; the rerun then passed. No provider
+request, screenshot, personal document, clipboard value, or generic desktop
+action was involved. The temporary probe was removed before the final clean
+release build.
+
 ## Verification and failure
 
-CuaDriver may report an effect as `unverifiable`. The app does not treat that field as success. It performs a fresh native readback through the Safari fixture adapter. A verified `State: reviewed` is success; a missing or stale target blocks the action; an uncertain postcondition becomes `outcome_unknown` and is not replayed automatically.
+CuaDriver may report an effect as `unverifiable`. The app does not treat that field as success. It performs a fresh native readback through the Safari fixture adapter. A verified requested state is success; a missing or stale target blocks the action; an uncertain postcondition becomes `outcome_unknown` and is not replayed automatically.
 
 If this mode needs to expand beyond the Safari fixture or Jev-owned TextEdit workspace, add a new capability, target contract, policy test, exact observation, confirmation rule, and independent verifier first. Do not turn the executor into a free-form desktop command bridge.
 
@@ -93,6 +132,8 @@ button:
 5. `outcome_unknown` handling that prohibits automatic replay.
 6. Redacted activity events without raw task bodies, screenshots, credentials,
    or provider response bodies.
+7. Strict SSH host-key verification through an explicitly managed `known_hosts`
+   file for any remote CuaDriver or Hermes transport.
 
 The UI contract is recorded in
 `Design/EXPERIMENTAL_DESKTOP_MODE_SPEC.md`.

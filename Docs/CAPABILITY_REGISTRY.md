@@ -8,6 +8,7 @@ This registry is the trust boundary for v0.1. Code creates these exact capabilit
 | --- | --- | --- | --- | --- | --- |
 | `activate_preflighted_safari_fixture` | Known Safari process and versioned local fixture window | Activate the known fixture only | Final transcript, unless explicitly pre-authorized as harmless preparation | No external visibility; local policy still checks | Safari process, window, and fixture identity |
 | `select_reviewed_fixture_view` | Known fixture window and reviewed local view identity | Select one reviewed fixture view through the tested native path | Final transcript | No, if the view operation is explicitly classified harmless and current | Exact fixture view state |
+| `return_to_landing_fixture_view` | Known fixture window and reviewed local view identity | Press the fixed control that returns the local fixture to its landing view | Final transcript | No, reversible synthetic fixture transition | Exact fixture view state |
 | `wait_for_reviewed_fixture_state` | Known fixture and named state | Wait with a deadline and budget | Final or stable eligible transcript | No | Named state observed before deadline |
 | `stop` | Current session | Invalidate future dispatch authority | Any phase | No | Session cannot dispatch after invalidation |
 | `ask_user` | Current session | Request clarification or approval without native effect | Any ambiguous or confirmation-required phase | User response is separate, exact, and expiring | Explicit response identity |
@@ -58,7 +59,8 @@ Reject unknown IDs, wrong answer types, unknown fields that could carry executab
 
 ## Deferred Capabilities
 
-These do not exist in the first Safari slice:
+These do not exist as Jev-selected capabilities yet:
 
 - `create_exact_local_note`, pending Safari gate and Notes feasibility.
+- The current TextEdit workspace probe is an explicit app action, not a live Jev or voice-selected capability.
 - Generic click, type, copy, URL, browser navigation, shell, AppleScript, send, delete, purchase, publish, share, account, or system-setting operations.

@@ -8,6 +8,7 @@ final class CapabilityPolicyTests: XCTestCase {
             [
                 .activatePreflightedSafariFixture,
                 .selectReviewedFixtureView,
+                .returnToLandingFixtureView,
                 .waitForReviewedFixtureState,
                 .stop,
                 .askUser

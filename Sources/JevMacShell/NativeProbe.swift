@@ -4,6 +4,7 @@ import AVFoundation
 import Carbon.HIToolbox
 import CoreGraphics
 import Foundation
+import JevCore
 import Speech
 
 struct NativeProbe {
@@ -19,11 +20,14 @@ struct NativeProbe {
             HotKeyProbe.run()
         case "--probe-safari":
             SafariFixtureProbe.run()
+        case "--probe-computer-use":
+            ComputerUseProbe.run()
         default:
             print("PROBE_ERROR=unsupported_command")
         }
         return true
     }
+
 
     private static func probeSpeech() {
         let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-CA"))
@@ -39,6 +43,37 @@ struct NativeProbe {
         print("REQUEST_FINALIZE=completed")
         request.endAudio()
         print("REQUEST_CANCEL_PATH=available")
+    }
+}
+
+private enum ComputerUseProbe {
+    static func run() {
+        Task { @MainActor in
+            let fixtureAdapter = SafariFixtureAdapter()
+            let computerUseAdapter = CuaDriverFixtureAdapter()
+            var succeeded = false
+
+            do {
+                let before = try await fixtureAdapter.connect()
+                let beforeView = before.view == .reviewed ? "reviewed" : "landing"
+                print("COMPUTER_USE_BEFORE=\(before.title) / \(beforeView)")
+                guard let candidate = CapabilityRegistry.firstSliceCandidates(target: before.binding)
+                    .first(where: { $0.id == .selectReviewedFixtureView }) else {
+                    throw FixtureExecutionError.unsupportedCapability
+                }
+                _ = try ComputerUsePolicy.action(for: candidate)
+                try await computerUseAdapter.pressReviewedFixture(expectedTarget: before.binding)
+                let after = try await fixtureAdapter.waitForReviewed(expectedTarget: before.binding)
+                let afterView = after.view == .reviewed ? "reviewed" : "landing"
+                print("COMPUTER_USE_AFTER=\(after.title) / \(afterView)")
+                succeeded = after.view == .reviewed
+                print("COMPUTER_USE_EXACT_POSTCONDITION=\(succeeded)")
+            } catch {
+                print("COMPUTER_USE_PROBE_ERROR=\(error.localizedDescription)")
+            }
+            Darwin.exit(succeeded ? 0 : 1)
+        }
+        RunLoop.main.run()
     }
 }
 
@@ -100,49 +135,7 @@ private enum SafariFixtureProbe {
     private static let expectedState = "State: reviewed"
 
     static func run() {
-        guard AXIsProcessTrusted() else {
-            print("SAFARI_PROBE=blocked_accessibility")
-            return
-        }
-
-        guard let safari = NSRunningApplication.runningApplications(
-            withBundleIdentifier: "com.apple.Safari"
-        ).first(where: { $0.processIdentifier > 0 }) else {
-            print("SAFARI_PROBE=safari_not_running")
-            return
-        }
-
-        let processID = safari.processIdentifier
-        let application = AXUIElementCreateApplication(processID)
-        guard let window = findFixtureWindow(in: application) else {
-            print("SAFARI_PROBE=fixture_window_not_found")
-            print("SAFARI_PID=\(processID)")
-            return
-        }
-
-        let titleBefore = stringAttribute(window, kAXTitleAttribute) ?? ""
-        let windowID = visibleWindowID(processID: processID, title: titleBefore)
-        print("SAFARI_PID=\(processID)")
-        print("SAFARI_WINDOW_TITLE_BEFORE=\(titleBefore)")
-        print("SAFARI_WINDOW_ID=\(windowID.map(String.init) ?? "unknown")")
-        print("SAFARI_FIXTURE_IDENTITY=\(titleBefore.contains(fixtureTitle))")
-
-        guard let button = findButton(in: window) else {
-            print("SAFARI_BUTTON_FOUND=false")
-            return
-        }
-        print("SAFARI_BUTTON_FOUND=true")
-
-        let pressStatus = AXUIElementPerformAction(button, kAXPressAction as CFString)
-        print("SAFARI_PRESS_STATUS=\(pressStatus.rawValue)")
-        RunLoop.main.run(until: Date().addingTimeInterval(0.8))
-
-        let titleAfter = stringAttribute(window, kAXTitleAttribute) ?? ""
-        let stateFound = containsExpectedState(in: window)
-        let exactPostcondition = titleAfter.contains("Reviewed") && stateFound
-        print("SAFARI_WINDOW_TITLE_AFTER=\(titleAfter)")
-        print("SAFARI_STATE_FOUND=\(stateFound)")
-        print("SAFARI_EXACT_POSTCONDITION=\(exactPostcondition)")
+        print("SAFARI_PROBE=deferred_use_safari_fixture_adapter")
     }
 
     private static func findFixtureWindow(in application: AXUIElement) -> AXUIElement? {
