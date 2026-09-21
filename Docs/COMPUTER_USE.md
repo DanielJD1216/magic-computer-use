@@ -56,24 +56,10 @@ The Mac must have the CuaDriver executable installed and its required macOS perm
 
 ## Target-Mac evidence
 
-After the deployed bundle was approved in macOS Accessibility settings, the
-bounded workspace route was exercised through the normal command panel with
-the bounded executor enabled:
-
-```text
-Jev Completed
-Workspace test complete.
-Verified CuaDriver text input in the Jev-owned TextEdit workspace.
-Fresh TextEdit accessibility readback matched exactly.
-```
-
-The action created only a disposable app-owned workspace document and used the
-fixed synthetic probe string. No provider request, live Jev selection, personal
-document, screenshot, clipboard value, or generic desktop action was involved.
-
-The next bounded Safari slice was then exercised through the deployed bundle
-after Accessibility was re-approved for the ad-hoc replacement. The temporary
-probe used only the declared Safari target and the fixed landing capability:
+The current deployed bundle exposes only the bounded Safari fixture route. The
+former TextEdit workspace probe is deferred and does not create a document or
+dispatch input. The current staging evidence uses only the declared Safari
+target and the fixed landing capability:
 
 ```text
 COMPUTER_USE_LANDING_BEFORE=Jev Fixture v1 | Reviewed / reviewed
@@ -93,15 +79,18 @@ release build.
 
 CuaDriver may report an effect as `unverifiable`. The app does not treat that field as success. It performs a fresh native readback through the Safari fixture adapter. A verified requested state is success; a missing or stale target blocks the action; an uncertain postcondition becomes `outcome_unknown` and is not replayed automatically.
 
-If this mode needs to expand beyond the Safari fixture or Jev-owned TextEdit workspace, add a new capability, target contract, policy test, exact observation, confirmation rule, and independent verifier first. Do not turn the executor into a free-form desktop command bridge.
+If this mode needs to expand beyond the Safari fixture, add a new capability,
+target contract, policy test, exact observation, confirmation rule, and
+independent verifier first. Do not turn the executor into a free-form desktop
+command bridge.
 
 ## Jev execution-mode UI
 
 The command panel now exposes three explicit modes:
 
 - **Native Swift:** deterministic execution for the registered Safari fixture.
-- **Bounded CuaDriver:** CuaDriver may act only on the Safari fixture or the
-  Jev-owned TextEdit workspace.
+- **Bounded CuaDriver:** CuaDriver may act only on the registered Safari
+  fixture. The former TextEdit workspace route is deferred.
 - **Experimental desktop:** a clearly labelled current-Mac surface intended
   for a future Hermes controller bridge.
 

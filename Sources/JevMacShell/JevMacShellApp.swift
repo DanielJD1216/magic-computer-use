@@ -146,7 +146,7 @@ final class ShellModel: ObservableObject {
         case .native:
             return "Native Swift executor"
         case .bounded:
-            return "Bounded CuaDriver executor • fixture + Jev workspace"
+            return "Bounded CuaDriver executor • Safari fixture only"
         case .experimentalDesktop:
             return desktopControllerReady
                 ? "Experimental desktop surface • Hermes + Mac CuaDriver"

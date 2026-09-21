@@ -23,7 +23,7 @@ public enum ComputerUseMode: String, CaseIterable, Identifiable {
         case .native:
             return "Deterministic native execution for the registered fixture."
         case .bounded:
-            return "CuaDriver may act only on the Safari fixture or Jev workspace."
+            return "CuaDriver may act only on the registered Safari fixture."
         case .experimentalDesktop:
             return "Future Hermes tasks may target the current Mac session."
         }
