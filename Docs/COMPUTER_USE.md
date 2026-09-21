@@ -15,7 +15,7 @@ The mode does not accept model-provided coordinates, selectors, URLs, shell comm
 
 ## Fast subtask proof boundary
 
-The reusable `FastSubtaskExecutor` currently has a deterministic Safari fixture backend and an end-to-end fixture test. That proof covers bounded observation, legal action-space construction, trusted input-key materialization, freshness, settling, independent verification, cancellation, budgets, stale targets, no-change blocking, uncertain outcomes, and redacted evidence.
+The reusable `FastSubtaskExecutor` currently has a deterministic Safari fixture backend and an end-to-end fixture test. The native `select_reviewed_fixture_view` capability is now wired through a Mac-side Safari adapter into this bounded executor; the existing bounded CuaDriver route remains a separate execution path. That proof covers bounded observation, legal action-space construction, trusted input-key materialization, freshness, settling, independent verification, cancellation, budgets, stale targets, no-change blocking, uncertain outcomes, and redacted evidence.
 
 This fixture proof does not authorize arbitrary actions on the current Mac. It is not a live Jev policy adapter, OCR executor, Chrome DOM/CDP route, generic CuaDriver controller, or unrestricted desktop bridge. Those integrations remain separately gated and deferred.
 

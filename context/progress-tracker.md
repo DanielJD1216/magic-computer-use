@@ -7,7 +7,7 @@ Update this file after every meaningful change.
 - Corrected v0.1 contract and repository orientation are complete.
 - Authenticated Tailscale SSH to the target Mac is complete.
 - Full Xcode is installed and usable through `DEVELOPER_DIR`.
-- The pure Swift safety suite and integrated bounded fixture checks pass on the target Mac with 79 tests and 0 failures after the fast subtask runtime slices.
+- The pure Swift safety suite and integrated bounded fixture checks pass on the target Mac with 81 tests and 0 failures after the fast subtask runtime slices.
 - The target-Mac CuaDriver permissions and Hermes command preflight both return ready; no arbitrary task result has been independently verified after the earlier unknown outcome.
 - The local Safari fixture loop is complete; the live Jev selector is implemented and compile-verified on the target Mac.
 - The experimental desktop-mode UI is implemented and deployed as a separate, fail-closed surface; the live SSH-backed Hermes bridge and complete Hermes/CuaDriver preflight are green, while end-to-end task verification remains open.
@@ -16,7 +16,7 @@ Update this file after every meaningful change.
 
 ## Current Goal
 
-Validate one harmless, user-approved desktop task end-to-end and preserve an explicit `outcome_unknown` result when verification cannot be established.
+Close out the bounded native fixture route after one harmless, user-approved desktop task completes with a visible verified postcondition.
 
 ## Completed
 
@@ -60,19 +60,21 @@ Validate one harmless, user-approved desktop task end-to-end and preserve an exp
 - Reproduced the `open notesapp` latency as a router miss: the unspaced phrase fell through to Hermes. Added spaced, plural, and unspaced Notes variants; target-Mac tests now pass with 52 tests and 0 failures, and the release was redeployed.
 - Added the bounded `FastSubtaskExecutor` value models, operation-specific action spaces, trusted input-key validation, backend/verifier seams, and deterministic Safari fixture adapter.
 - Added executor coverage for stale targets, no-change blocking, action budgets, cancellation, uncertain post-action observations, independent verification, and end-to-end fixture execution.
-- Added a local `FastDesktopExecutionEvidence` projection and lifecycle checkpoints; the target-Mac suite now passes with 79 tests and 0 failures, with canary values excluded from serialized evidence.
+- Added a local `FastDesktopExecutionEvidence` projection and lifecycle checkpoints; the target-Mac suite now passes with 81 tests and 0 failures, with canary values excluded from serialized evidence.
+- Wired the native `select_reviewed_fixture_view` capability through the bounded `FastSubtaskExecutor`, a Mac Safari observation/action adapter, independent readback verification, and cancellation propagation. The CuaDriver bounded route remains separate.
+- Daniel verified the deployed UI path after restoring Accessibility permission and selecting Native Swift mode: the Safari fixture connected, the reviewed-view command completed, and the visible postcondition read `State: reviewed`.
 
 ## In Progress
 
 - Keep the experimental voice/send controls fail-closed until the complete Hermes and CuaDriver preflight returns `ready`.
 - Preserve the transport evidence: Tailscale SSH identity, one active run, stop propagation, exit-status diagnostics, and uncertain outcomes become `outcome_unknown` without replay.
-- The remaining gate is one Daniel-approved harmless task with a visible postcondition; no task has been replayed automatically after the false-success reports.
+- The native fixture gate is closed with one Daniel-approved harmless task and a visible verified postcondition; no task was replayed automatically after the false-success reports.
 - Measure the fast route from speech release to CuaDriver confirmation; the read-only target CuaDriver call is currently 0.048 seconds, excluding speech capture.
 - Keep live dynamic Jev policy, OCR, Chrome DOM/CDP, and generic CuaDriver integration deferred. They require separate authorization, egress, target, and verification gates and are not part of this fixture runtime proof.
 
 ## Next Up
 
-1. Run the complete target-Mac validation gate for the bounded fixture runtime.
+1. Scope and record the bounded-route changes without staging unrelated worktree files.
 2. Preserve the explicit boundary: live dynamic Jev, OCR, Chrome DOM/CDP, and generic CuaDriver execution remain deferred.
 3. Keep generic desktop control, real-user data, and public claims out of scope.
 

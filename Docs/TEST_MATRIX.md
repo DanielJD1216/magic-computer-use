@@ -34,6 +34,7 @@
 | Verification | Independent completion verification before terminal success | Fixture |
 | Uncertain effect | Post-action observation failure becomes `outcome_unknown` without replay | Fixture |
 | Evidence | Redacted history and canary exclusion from serialized evidence | Fixture |
+| Native route wiring | Existing `select_reviewed_fixture_view` enters the bounded executor and returns through an exact Safari readback | Mac |
 
 ## First Safari Fixture Acceptance
 

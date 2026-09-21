@@ -13,7 +13,8 @@ Push-to-talk
   -> Local capability registry
   -> Selection adapter
   -> Policy engine
-  -> Executor selector: native Swift or bounded CuaDriver fixture route
+  -> Native executor: closed capability through FastSubtaskExecutor or deterministic adapter
+  -> Bounded CuaDriver fixture route
   -> Fixture verifier
   -> UI state and redacted evidence
 ```
@@ -29,7 +30,7 @@ Push-to-talk
 - `SelectionAdapter`: fixture adapter first; live Jev only after authorization and egress gates.
 - `PolicyEngine`: revalidates transcript phase, target, provenance, permission, freshness, risk, confirmation, policy version, deadline, and binding identities.
 - `FastSubtaskExecutor`: runs a trusted, bounded multi-step subtask beneath the closed capability and policy layers. It builds operation-specific action spaces, materializes only trusted input keys, checks freshness before dispatch, settles after mutation, enforces budgets and cancellation, and requires independent verification. It cannot create capabilities or authorize arbitrary current-Mac actions.
-- `NativeExecutor`: maps a validated capability ID to one trusted adapter operation. No arbitrary parameters or executable model output enter this layer.
+- `NativeExecutor`: maps a validated capability ID to one trusted adapter operation. The reviewed fixture capability may instead enter the bounded `FastSubtaskExecutor` through the capability route seam; no arbitrary parameters or executable model output enter either layer.
 - `ComputerUseExecutor`: default-off CuaDriver bridge for the reviewed-fixture capability and the app-owned TextEdit workspace probe. Each route receives a native target contract, requires a fresh Accessibility element, and returns to an independent verifier. It is not a generic desktop command surface.
 - `ExperimentalDesktopSurface`: explicit current-Mac mode, warning, task composer, controller status, stop/reset controls, and redacted activity history. It does not grant execution authority; the Hermes send action stays disabled until the controller bridge is verified.
 - `HermesControllerBridge`: `JevCore` protocol and lifecycle contract for authenticated Hermes capabilities, one active run, status/events, stop, and fail-closed `outcome_unknown` handling. The current build includes no live transport implementation.
