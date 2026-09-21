@@ -8,6 +8,7 @@ Update this file after every meaningful change.
 - Authenticated Tailscale SSH to the target Mac is complete.
 - Full Xcode is installed and usable through `DEVELOPER_DIR`.
 - The pure Swift safety suite and integrated bounded fixture checks pass on the target Mac with 81 tests and 0 failures after the fast subtask runtime slices.
+- The fixture-backed TypeSafe Choice client now has provider-shaped request/response models and six focused target-Mac tests; no live provider request or credential was used.
 - The target-Mac CuaDriver permissions and Hermes command preflight both return ready; no arbitrary task result has been independently verified after the earlier unknown outcome.
 - The local Safari fixture loop is complete; the live Jev selector is implemented and compile-verified on the target Mac.
 - The experimental desktop-mode UI is implemented and deployed as a separate, fail-closed surface; the live SSH-backed Hermes bridge and complete Hermes/CuaDriver preflight are green, while end-to-end task verification remains open.
@@ -16,7 +17,7 @@ Update this file after every meaningful change.
 
 ## Current Goal
 
-Close out the bounded native fixture route after one harmless, user-approved desktop task completes with a visible verified postcondition.
+Validate the provider-shaped TypeSafe Choice boundary with fixture transport while keeping Gate 2 authorization and live network access closed.
 
 ## Completed
 
@@ -63,6 +64,7 @@ Close out the bounded native fixture route after one harmless, user-approved des
 - Added a local `FastDesktopExecutionEvidence` projection and lifecycle checkpoints; the target-Mac suite now passes with 81 tests and 0 failures, with canary values excluded from serialized evidence.
 - Wired the native `select_reviewed_fixture_view` capability through the bounded `FastSubtaskExecutor`, a Mac Safari observation/action adapter, independent readback verification, and cancellation propagation. The CuaDriver bounded route remains separate.
 - Daniel verified the deployed UI path after restoring Accessibility permission and selecting Native Swift mode: the Safari fixture connected, the reviewed-view command completed, and the visible postcondition read `State: reviewed`.
+- Revalidated the official TypeSafe System One request and Choice response contract, then added the network-free `TypeSafeChoiceClient` with explicit status, timeout, cancellation, malformed-response, closed-choice, probability, and payload-limit handling.
 
 ## In Progress
 
@@ -70,13 +72,13 @@ Close out the bounded native fixture route after one harmless, user-approved des
 - Preserve the transport evidence: Tailscale SSH identity, one active run, stop propagation, exit-status diagnostics, and uncertain outcomes become `outcome_unknown` without replay.
 - The native fixture gate is closed with one Daniel-approved harmless task and a visible verified postcondition; no task was replayed automatically after the false-success reports.
 - Measure the fast route from speech release to CuaDriver confirmation; the read-only target CuaDriver call is currently 0.048 seconds, excluding speech capture.
-- Keep live dynamic Jev policy, OCR, Chrome DOM/CDP, and generic CuaDriver integration deferred. They require separate authorization, egress, target, and verification gates and are not part of this fixture runtime proof.
+- Keep live dynamic Jev policy, OCR, Chrome DOM/CDP, and generic CuaDriver integration deferred. The fixture-backed TypeSafe boundary is validated, but live transport still requires Gate 2 authorization, egress, target, and verification gates.
 
 ## Next Up
 
-1. Scope and record the bounded-route changes without staging unrelated worktree files.
-2. Preserve the explicit boundary: live dynamic Jev, OCR, Chrome DOM/CDP, and generic CuaDriver execution remain deferred.
-3. Keep generic desktop control, real-user data, and public claims out of scope.
+1. Resolve the account-specific Gate 2 decision: authorization, direct-call versus relay, retention, and credential-storage conditions.
+2. If Gate 2 closes, add a separate Mac transport and manually approved synthetic smoke test. Otherwise keep the fixture transport as the terminal slice.
+3. Preserve the explicit boundary: live dynamic Jev, OCR, Chrome DOM/CDP, and generic CuaDriver execution remain deferred.
 
 ## Architecture Decisions
 

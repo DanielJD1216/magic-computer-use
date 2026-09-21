@@ -21,6 +21,7 @@
 | Policy | Final speech gate, target check, permission, risk, confirmation, expiry, reason codes | Fixture |
 | Redaction | Audio, credentials, URLs, clipboard, Accessibility values, raw HTTP body, fixture canaries | Fixture |
 | Transport mapping | `401`, `422`, `429`, `529`, timeout, cancellation, oversized/invalid response | Fixture |
+| TypeSafe fixture client | Official request shape, Choice/usage parsing, closed-choice validation, provider status mapping, malformed/oversized responses | Fixture |
 | Orchestrator | Fake speech, observation, selector, executor, verifier end to end | Fixture |
 
 ## Fast Subtask Fixture Tests
