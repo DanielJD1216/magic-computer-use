@@ -2,11 +2,11 @@
 
 ## Status
 
-**BLOCKED BY EVIDENCE. Do not enable live TypeSafe transport yet.**
+**BLOCKED BY PROVIDER RESPONSE. Do not retry or treat live TypeSafe transport as ready.**
 
-Last checked: `2026-09-20T18:30:59-07:00`.
+Last checked: `2026-09-20T19:13:53-07:00`.
 
-The decision under review is whether JevMacShell may make live TypeSafe requests for a minimized, synthetic Safari-fixture policy state. This is an operational and product authorization review, not legal advice. No live request was made and no credential was requested or used.
+The decision under review is whether JevMacShell may make live TypeSafe requests for a minimized, synthetic Safari-fixture policy state. This is an operational and product authorization review, not legal advice. One explicitly authorized synthetic request was made and failed closed; no credential value was requested, displayed, or used in chat.
 
 ## Direct verdict
 
@@ -69,6 +69,10 @@ The public DPA describes a controller/processor relationship, documented instruc
 ## Recommended next action
 
 Keep the code and UI default-off. The next physical action is to inspect the TypeSafe account's governing agreement, credit status, and account-specific data handling, or obtain written confirmation from TypeSafe. Do not paste an API key into chat or the repository. Once those facts are available, a separate approval can authorize or reject a target-Mac synthetic smoke test.
+
+## Live smoke outcome
+
+One explicitly authorized synthetic request was sent from the configured target Mac after the local test and build gates passed. It returned HTTP `403` with a provider error body whose only retained field was `detail`; the response body was not retained. No selection or local action resulted, and no retry was made. Full sanitized evidence is recorded in `Docs/TYPESAFE_LIVE_SMOKE_RESULT.md`.
 
 ## Sources
 

@@ -65,6 +65,7 @@ Validate the provider-shaped TypeSafe Choice boundary with fixture transport whi
 - Wired the native `select_reviewed_fixture_view` capability through the bounded `FastSubtaskExecutor`, a Mac Safari observation/action adapter, independent readback verification, and cancellation propagation. The CuaDriver bounded route remains separate.
 - Daniel verified the deployed UI path after restoring Accessibility permission and selecting Native Swift mode: the Safari fixture connected, the reviewed-view command completed, and the visible postcondition read `State: reviewed`.
 - Revalidated the official TypeSafe System One request and Choice response contract, then added the network-free `TypeSafeChoiceClient` with explicit status, timeout, cancellation, malformed-response, closed-choice, probability, and payload-limit handling.
+- Sent one explicitly authorized synthetic TypeSafe smoke request from the configured target Mac; the provider returned HTTP 403, no selection or local action followed, and no retry was made. Gate 2 remains blocked pending account-specific provider clarification.
 
 ## In Progress
 
