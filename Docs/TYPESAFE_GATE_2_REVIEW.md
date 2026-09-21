@@ -56,14 +56,14 @@ The public DPA describes a controller/processor relationship, documented instruc
 | Retention, deletion, telemetry, and subprocessors | **Insufficient for enablement** | Public policies describe broad retention or telemetry handling.[2][3] The account-specific terms and applicable DPA are not confirmed.[4][unverified] |
 | Credits, rate limits, and material cost | **Unknown** | The entity agreement describes credits,[3] but the active account balance, pricing, refill behavior, and agreement are unknown.[unverified] |
 | Credential path | **Locally designed, not authorized** | The intended storage boundary is macOS Keychain only.[unverified] No credential should be entered until the provider and account gates close. |
-| Live synthetic smoke test | **Blocked** | Requires the preceding decisions and explicit approval of a live provider call.[unverified] |
+| Live synthetic smoke test | **Blocked after provider 403** | Requires provider clarification and a new explicit approval before any retry.[unverified] |
 
 ## Required owner decisions
 
 1. Identify the agreement that governs the TypeSafe account used for this prototype: preview Terms of Service, an entity Master Customer Agreement and Order, or another account-specific document.
 2. Confirm that the intended use is Daniel's private synthetic-fixture evaluation and state whether it is allowed to support a DOO MADE-owned prototype. Do not assume that a private UI makes it acceptable under the preview restrictions.[1]
 3. Choose direct API transport or an approved relay. The implementation should not infer this from the existence of a public endpoint.[5]
-4. Confirm whether consuming credits or triggering any paid or auto-refill behavior is authorized.[3] No paid or live call is included in this phase.
+4. Confirm whether consuming credits or triggering any paid or auto-refill behavior is authorized.[3] One live call was explicitly authorized and returned HTTP 403; no further paid or live call is included until the provider response is explained.
 5. Confirm the permitted data boundary. The recommended first probe remains synthetic Safari-fixture state only, with no raw transcripts, personal data, screenshots, Accessibility values, credentials, URLs, or customer content.[2][4][6]
 
 ## Recommended next action
