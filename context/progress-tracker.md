@@ -7,7 +7,7 @@ Update this file after every meaningful change.
 - Corrected v0.1 contract and repository orientation are complete.
 - Authenticated Tailscale SSH to the target Mac is complete.
 - Full Xcode is installed and usable through `DEVELOPER_DIR`.
-- The prior target-Mac baseline after the reversible Safari Accessibility slice was 92 tests and 0 failures; the latest Swift changes still require secure target-Mac validation.
+- The prior target-Mac baseline after the reversible Safari Accessibility slice was 92 tests and 0 failures; the reduced Safari-only checkpoint now passes target-Mac validation with 73 tests and 0 failures plus a Release build.
 - The fixture-backed TypeSafe Choice client now has provider-shaped request/response models and six focused target-Mac tests; no live provider request or credential was used.
 - The target-Mac CuaDriver permissions and Hermes command preflight both return ready; no arbitrary task result has been independently verified after the earlier unknown outcome.
 - The local Safari fixture loop is complete; the live Jev selector is implemented and compile-verified on the target Mac.
@@ -71,6 +71,7 @@ Update this file after every meaningful change.
 - Revalidated the official TypeSafe System One request and Choice response contract, then added the network-free `TypeSafeChoiceClient` with explicit status, timeout, cancellation, malformed-response, closed-choice, probability, and payload-limit handling.
 - The SSH TypeSafe smoke harness was invalidated: the target Mac's Keychain item exists, but `security -w` under the SSH-executed shell returns exit 36 with an empty value. The harness had not checked that failure and could send an empty Bearer value, so its 403 results are not account evidence. The hardened harness now fails closed before curl.
 - With separate approval, a temporary GUI app invoked the existing `LiveJevSelectionAdapter` through the native Keychain and URLSession path using the bounded Safari fixture. It received `select_reviewed_fixture_view`, dispatched no capability, mutated no Safari state, and confirmed the probe-time flag was `0`. The temporary probe bundle and probe mode were removed afterward. The target Mac's Release bundle was then deployed, code-signature verified, relaunched, and explicitly configured with `jev.liveSelection.enabled=1`; no live decision was triggered during deployment. The deployed bundle was subsequently approved in macOS Accessibility settings, and the bounded Safari route was verified without another provider request. The workspace route is now deferred.
+- Committed the reduced Safari-only checkpoint as `6e520cb`, then corrected the remaining bounded-mode workspace wording and documentation in `e46ae70`. Both commits were pushed to `origin/main`; the corrected commit passed 73 target-Mac tests and a Release build, and its ad-hoc signed bundle was deployed with a timestamped rollback copy. Post-deploy Accessibility and synthetic Safari readback passed without a provider request.
 
 ## In Progress
 
@@ -83,7 +84,7 @@ Update this file after every meaningful change.
 
 ## Next Up
 
-1. The Safari-only Gate 2 and bounded Accessibility checkpoint is staged and passed independent security review; commit only after target-Mac Swift validation is available or the validation gap is explicitly accepted.
+1. The Safari-only Gate 2 and bounded Accessibility checkpoint is committed, pushed, target-Mac validated, and deployed with rollback preserved.
 2. Keep automatic refill off and the current bounded payload allowlist; review any broader field set separately before changing code.
 3. Preserve the explicit boundary: live dynamic Jev, OCR, Chrome DOM/CDP, and generic CuaDriver execution remain deferred.
 
